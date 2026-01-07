@@ -90,6 +90,18 @@ model Settings {
   updatedAt DateTime @updatedAt
 }
 
+// Image (이미지 저장 - DB에 Base64로 저장)
+model Image {
+  id        String   @id @default(cuid())
+  filename  String
+  mimeType  String
+  data      String   @db.Text // Base64 encoded
+  folder    String   @default("uploads")
+  createdAt DateTime @default(now())
+
+  @@index([folder])
+}
+
 // LiveVideo (라이브 비디오)
 model LiveVideo {
   id        String   @id @default(cuid())
