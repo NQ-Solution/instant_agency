@@ -1,26 +1,342 @@
 @import "tailwindcss";
 
+/* Tailwind v4 Theme Configuration */
+@theme {
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-playfair), ui-serif, Georgia, serif;
+  --font-logo: var(--font-playfair), ui-serif, Georgia, serif;
+}
+
+/* CSS Custom Properties for Theme Switching */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --bg: #0a0a0a;
+  --text: #f5f5f5;
+  --text-muted: #888888;
+  --logo-filter: invert(1);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+[data-theme="light"] {
+  --bg: #e8e8e8;
+  --text: #2a2a2a;
+  --text-muted: #666666;
+  --logo-filter: none;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* Base Styles - minimal reset */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Scroll Snap for public pages */
+html.scroll-snap {
+  scroll-snap-type: y mandatory;
+}
+
+html.scroll-snap section {
+  scroll-snap-align: start;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+  background-color: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+  transition: background-color 0.4s ease, color 0.4s ease;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Typography */
+.font-serif,
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-serif);
+}
+
+.font-logo {
+  font-family: var(--font-playfair), serif;
+}
+
+/* Links - remove default underline */
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* Images */
+img {
+  transition: filter 0.5s ease, transform 0.5s ease;
+}
+
+[data-theme="dark"] img:not(.no-grayscale) {
+  filter: grayscale(100%);
+}
+
+[data-theme="dark"] img:hover:not(.no-grayscale),
+[data-theme="dark"] *:hover > img:not(.no-grayscale) {
+  filter: grayscale(0%);
+}
+
+/* Form Elements */
+input:focus, textarea:focus, select:focus {
+  outline: none;
+}
+
+/* Form inputs and selects - ensure proper colors */
+input, textarea, select {
+  color: var(--text);
+  background-color: transparent;
+}
+
+/* Select options need explicit background in light mode */
+select option {
+  background-color: var(--bg);
+  color: var(--text);
+}
+
+[data-theme="light"] select option {
+  background-color: #ffffff;
+  color: #2a2a2a;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--text-muted);
+  border-radius: 3px;
+}
+
+/* Selection */
+::selection {
+  background-color: var(--text);
+  color: var(--bg);
+}
+
+/* Theme-aware Utility Classes */
+.text-muted {
+  color: var(--text-muted) !important;
+}
+
+.bg-theme {
+  background-color: var(--bg) !important;
+}
+
+.text-theme {
+  color: var(--text) !important;
+}
+
+.bg-theme-inverse {
+  background-color: var(--text) !important;
+}
+
+.text-theme-inverse {
+  color: var(--bg) !important;
+}
+
+.border-theme {
+  border-color: var(--text) !important;
+}
+
+/* Hover utilities */
+.hover\:bg-theme-inverse:hover {
+  background-color: var(--text) !important;
+}
+
+.hover\:text-theme-inverse:hover {
+  color: var(--bg) !important;
+}
+
+.hover\:text-theme:hover {
+  color: var(--text) !important;
+}
+
+.hover\:border-theme:hover {
+  border-color: var(--text) !important;
+}
+
+/* Opacity variants using rgba */
+.bg-theme-5 {
+  background-color: rgba(245, 245, 245, 0.05);
+}
+[data-theme="light"] .bg-theme-5 {
+  background-color: rgba(42, 42, 42, 0.05);
+}
+
+.bg-theme-10 {
+  background-color: rgba(245, 245, 245, 0.1);
+}
+[data-theme="light"] .bg-theme-10 {
+  background-color: rgba(42, 42, 42, 0.1);
+}
+
+.bg-theme-20 {
+  background-color: rgba(245, 245, 245, 0.2);
+}
+[data-theme="light"] .bg-theme-20 {
+  background-color: rgba(42, 42, 42, 0.2);
+}
+
+.border-theme-10 {
+  border-color: rgba(245, 245, 245, 0.1) !important;
+}
+[data-theme="light"] .border-theme-10 {
+  border-color: rgba(42, 42, 42, 0.1) !important;
+}
+
+.border-theme-20 {
+  border-color: rgba(245, 245, 245, 0.2) !important;
+}
+[data-theme="light"] .border-theme-20 {
+  border-color: rgba(42, 42, 42, 0.2) !important;
+}
+
+.border-theme-30 {
+  border-color: rgba(245, 245, 245, 0.3) !important;
+}
+[data-theme="light"] .border-theme-30 {
+  border-color: rgba(42, 42, 42, 0.3) !important;
+}
+
+/* Background Circles */
+.bg-circles {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  pointer-events: none;
+}
+
+.bg-circles::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 60vw;
+  height: 60vw;
+  border: 1px solid rgba(255, 255, 255, 0.03);
+  border-radius: 50%;
+}
+
+.bg-circles::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 40vw;
+  height: 40vw;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 50%;
+}
+
+[data-theme="light"] .bg-circles::before,
+[data-theme="light"] .bg-circles::after {
+  border-color: rgba(0, 0, 0, 0.05);
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes scrollPulse {
+  0%, 100% { opacity: 0.3; transform: scaleY(1); }
+  50% { opacity: 1; transform: scaleY(1.2); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.6s ease forwards;
+}
+
+.animate-fade-up {
+  animation: fadeUp 1.5s ease forwards;
+}
+
+.animate-fade-up-delay {
+  animation: fadeUp 1.5s ease 0.3s forwards;
+  opacity: 0;
+}
+
+.animate-scroll-pulse {
+  animation: scrollPulse 2s ease infinite;
+}
+
+/* Section Animations - apply when scrolled into view */
+.section-animate {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: all 0.8s ease;
+}
+
+.section-animate.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Admin Sidebar */
+.admin-sidebar {
+  background-color: #1a1a1a;
+}
+
+[data-theme="light"] .admin-sidebar {
+  background-color: #ffffff;
+  border-right: 1px solid #e0e0e0;
+}
+
+/* Map Styling */
+.map-container iframe {
+  filter: grayscale(100%) invert(92%) contrast(83%);
+}
+
+[data-theme="light"] .map-container iframe {
+  filter: grayscale(100%) contrast(90%);
+}
+
+/* FullCalendar Custom Styles */
+.fc {
+  --fc-border-color: var(--text-muted);
+  --fc-button-bg-color: transparent;
+  --fc-button-border-color: var(--text);
+  --fc-button-text-color: var(--text);
+  --fc-button-hover-bg-color: var(--text);
+  --fc-button-hover-border-color: var(--text);
+  --fc-button-active-bg-color: var(--text);
+  --fc-today-bg-color: rgba(136, 136, 136, 0.1);
+  --fc-event-bg-color: var(--text);
+  --fc-event-border-color: var(--text);
+}
+
+.fc-theme-standard td,
+.fc-theme-standard th {
+  border-color: rgba(136, 136, 136, 0.2);
+}
+
+.fc-col-header-cell-cushion,
+.fc-daygrid-day-number {
+  color: var(--text);
+}
+
+.fc-button:disabled {
+  opacity: 0.5;
+}
+
+.fc-timegrid-slot-label-cushion,
+.fc-timegrid-axis-cushion {
+  color: var(--text-muted);
 }

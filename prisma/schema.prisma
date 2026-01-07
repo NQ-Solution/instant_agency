@@ -1,0 +1,108 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Model (사람 모델)
+model Model {
+  id            String   @id @default(cuid())
+  name          String
+  nameKr        String?
+  slug          String   @unique
+  category      String   // 'women' | 'men' | 'new'
+  featured      Boolean  @default(false)
+  profileImage  String
+  galleryImages String[] @default([])
+  stats         Json     // { height, bust, waist, hips, shoes, eyes, hair }
+  location      String   @default("Seoul")
+  bio           String?
+  experience    Json     @default("[]") // [{ brand, year, type }]
+  social        Json     @default("{}") // { instagram, portfolioPdf }
+  active        Boolean  @default(true)
+  order         Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([category, active, order])
+  @@index([featured, active])
+}
+
+// Creator (크리에이터)
+model Creator {
+  id        String   @id @default(cuid())
+  name      String
+  platform  String
+  category  String
+  image     String
+  followers String
+  views     String
+  featured  Boolean  @default(false)
+  order     Int      @default(0)
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([active, order])
+  @@index([featured, active])
+}
+
+// Booking (예약)
+model Booking {
+  id        String   @id @default(cuid())
+  date      DateTime
+  time      String
+  endTime   String?
+  service   String
+  customer  Json     // { name, email, phone, company? }
+  status    String   @default("pending") // 'pending' | 'confirmed' | 'cancelled'
+  notes     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([date, status])
+}
+
+// Page (페이지 콘텐츠)
+model Page {
+  id        String   @id @default(cuid())
+  pageId    String   @unique // 'home' | 'about' | 'models' | 'studio' | 'live' | 'contact'
+  sections  Json     @default("[]") // [{ sectionId, title, subtitle, description, items, order }]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Settings (설정)
+model Settings {
+  id        String   @id @default(cuid())
+  site      Json     @default("{}") // { name, logo, tagline }
+  contact   Json     @default("{}") // { email, phone, businessHours }
+  offices   Json     @default("[]") // [{ city, address }]
+  social    Json     @default("{}") // { instagram, linkedin, twitter, youtube }
+  partners  String[] @default([])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// LiveVideo (라이브 비디오)
+model LiveVideo {
+  id        String   @id @default(cuid())
+  tag       String
+  title     String
+  creator   String
+  videoUrl  String
+  label     String
+  infoTitle String
+  desc      String
+  stats     Json     @default("{}") // { views, conversion }
+  order     Int      @default(0)
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
