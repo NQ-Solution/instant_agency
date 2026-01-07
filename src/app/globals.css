@@ -36,6 +36,10 @@ html.scroll-snap section {
   scroll-snap-align: start;
 }
 
+html.scroll-snap footer {
+  scroll-snap-align: end;
+}
+
 body {
   font-family: var(--font-sans);
   background-color: var(--bg);

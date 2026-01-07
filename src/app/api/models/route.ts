@@ -9,6 +9,7 @@ export async function GET(request: NextRequest) {
     const category = searchParams.get('category');
     const featured = searchParams.get('featured');
     const active = searchParams.get('active');
+    const includeInactive = searchParams.get('includeInactive');
 
     // Build query
     const where: {
@@ -23,7 +24,8 @@ export async function GET(request: NextRequest) {
     if (featured === 'true') {
       where.featured = true;
     }
-    if (active !== 'false') {
+    // Include inactive models if requested, otherwise filter by active only
+    if (includeInactive !== 'true' && active !== 'false') {
       where.active = true;
     }
 

@@ -102,6 +102,22 @@ model Image {
   @@index([folder])
 }
 
+// Inquiry (문의)
+model Inquiry {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  phone     String?
+  company   String?
+  subject   String
+  message   String   @db.Text
+  status    String   @default("pending") // 'pending' | 'read' | 'replied'
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status, createdAt])
+}
+
 // LiveVideo (라이브 비디오)
 model LiveVideo {
   id        String   @id @default(cuid())

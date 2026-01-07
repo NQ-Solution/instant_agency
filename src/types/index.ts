@@ -111,6 +111,20 @@ export interface Booking {
   updatedAt?: Date;
 }
 
+// Inquiry types
+export interface Inquiry {
+  id: string;
+  name: string;
+  email: string;
+  phone?: string;
+  company?: string;
+  subject: string;
+  message: string;
+  status: 'pending' | 'read' | 'replied';
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
 // Creator types
 export interface Creator {
   id: string;
@@ -155,4 +169,144 @@ export interface ApiResponse<T = unknown> {
   data?: T;
   error?: string;
   message?: string;
+}
+
+// Home Page Content types
+export interface HeroSection {
+  title: string;
+  subtitle: string;
+  scrollText: string;
+}
+
+export interface DivisionItem {
+  id: string;
+  number: string;
+  title: string;
+  desc: string;
+  image: string;
+  href: string;
+}
+
+export interface StatItem {
+  value: string;
+  label: string;
+}
+
+export interface AboutPreview {
+  sectionNumber: string;
+  title: string;
+  description: string;
+  image: string;
+  stats: StatItem[];
+}
+
+export interface CTASection {
+  sectionNumber: string;
+  title: string;
+  email: string;
+  socialLinks: { label: string; href: string }[];
+  offices: { title: string; address: string }[];
+}
+
+export interface HomePageContent {
+  hero: HeroSection;
+  divisions: {
+    sectionNumber: string;
+    title: string;
+    items: DivisionItem[];
+  };
+  talents: {
+    sectionNumber: string;
+    title: string;
+    buttonText: string;
+  };
+  stats: StatItem[];
+  about: AboutPreview;
+  cta: CTASection;
+}
+
+// About Page Content
+export interface AboutPageContent {
+  hero: {
+    label: string;
+    title: string;
+    subtitle: string;
+  };
+  story: {
+    image: string;
+    title: string;
+    paragraphs: string[];
+  };
+  values: {
+    title: string;
+    items: { icon: string; title: string; desc: string }[];
+  };
+  timeline: {
+    title: string;
+    subtitle: string;
+    items: { year: string; title: string; desc: string }[];
+  };
+  cta: {
+    title: string;
+    buttonText: string;
+  };
+}
+
+// Studio Page Content
+export interface StudioPageContent {
+  hero: {
+    tag: string;
+    label: string;
+    title: string;
+    subtitle: string;
+  };
+  info: {
+    image: string;
+    label: string;
+    title: string;
+    description: string;
+    features: string[];
+    linkText: string;
+  };
+  cta: {
+    title: string;
+    description: string;
+    buttonText: string;
+  };
+}
+
+// Live Page Content
+export interface LivePageContent {
+  hero: {
+    tag: string;
+    label: string;
+    title: string;
+    subtitle: string;
+  };
+  cta: {
+    title: string;
+    description: string;
+    buttonText: string;
+  };
+}
+
+// Contact Page Content
+export interface ContactPageContent {
+  hero: {
+    label: string;
+    title: string;
+    subtitle: string;
+  };
+  info: {
+    email: string;
+    businessHours: string;
+  };
+  offices: { city: string; address: string; phone: string }[];
+  map: {
+    title: string;
+    subtitle: string;
+    embedUrl: string;
+    address: string;
+    directionsUrl: string;
+  };
 }

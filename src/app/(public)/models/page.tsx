@@ -12,16 +12,6 @@ const categories = [
   { id: 'new', label: 'New Faces' },
 ];
 
-// Sample data when API is not available
-const sampleModels: Model[] = [
-  { id: '1', name: 'Yuna Kim', slug: 'yuna-kim', category: 'women', featured: true, profileImage: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400', galleryImages: [], stats: { height: '175' }, location: 'Seoul', bio: '', experience: [], social: {}, active: true, order: 1 },
-  { id: '2', name: 'Soo Min', slug: 'soo-min', category: 'women', featured: true, profileImage: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=400', galleryImages: [], stats: { height: '172' }, location: 'Paris', bio: '', experience: [], social: {}, active: true, order: 2 },
-  { id: '3', name: 'Jin Park', slug: 'jin-park', category: 'men', featured: false, profileImage: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400', galleryImages: [], stats: { height: '185' }, location: 'Seoul', bio: '', experience: [], social: {}, active: true, order: 3 },
-  { id: '4', name: 'Hana Lee', slug: 'hana-lee', category: 'new', featured: false, profileImage: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=400', galleryImages: [], stats: { height: '170' }, location: 'NYC', bio: '', experience: [], social: {}, active: true, order: 4 },
-  { id: '5', name: 'Min Jae', slug: 'min-jae', category: 'men', featured: false, profileImage: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400', galleryImages: [], stats: { height: '182' }, location: 'Seoul', bio: '', experience: [], social: {}, active: true, order: 5 },
-  { id: '6', name: 'Seo Yeon', slug: 'seo-yeon', category: 'women', featured: false, profileImage: 'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=400', galleryImages: [], stats: { height: '173' }, location: 'Paris', bio: '', experience: [], social: {}, active: true, order: 6 },
-];
-
 export default function ModelsPage() {
   const [models, setModels] = useState<Model[]>([]);
   const [loading, setLoading] = useState(true);
@@ -32,14 +22,11 @@ export default function ModelsPage() {
       try {
         const res = await fetch('/api/models');
         const data = await res.json();
-        if (data.success && data.data.length > 0) {
-          setModels(data.data);
-        } else {
-          setModels(sampleModels);
+        if (data.success) {
+          setModels(data.data || []);
         }
       } catch (error) {
         console.error('Error fetching models:', error);
-        setModels(sampleModels);
       } finally {
         setLoading(false);
       }
@@ -88,12 +75,16 @@ export default function ModelsPage() {
                 href={`/models/${model.slug}`}
                 className="group relative aspect-[3/4] overflow-hidden block"
               >
-                <Image
-                  src={model.profileImage}
-                  alt={model.name}
-                  fill
-                  className="object-cover grayscale group-hover:grayscale-0 group-hover:scale-105 transition-all duration-700"
-                />
+                {model.profileImage ? (
+                  <Image
+                    src={model.profileImage}
+                    alt={model.name}
+                    fill
+                    className="object-cover grayscale group-hover:grayscale-0 group-hover:scale-105 transition-all duration-700"
+                  />
+                ) : (
+                  <div className="absolute inset-0 bg-[var(--text)]/10" />
+                )}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                 <div className="absolute bottom-0 left-0 right-0 p-8 text-white">
                   <span className="inline-block px-3 py-1 border border-white/30 text-xs tracking-wider uppercase mb-4">
@@ -143,12 +134,16 @@ export default function ModelsPage() {
                 href={`/models/${model.slug}`}
                 className="group block relative aspect-[3/4] overflow-hidden"
               >
-                <Image
-                  src={model.profileImage}
-                  alt={model.name}
-                  fill
-                  className="object-cover grayscale group-hover:grayscale-0 group-hover:scale-105 transition-all duration-500"
-                />
+                {model.profileImage ? (
+                  <Image
+                    src={model.profileImage}
+                    alt={model.name}
+                    fill
+                    className="object-cover grayscale group-hover:grayscale-0 group-hover:scale-105 transition-all duration-500"
+                  />
+                ) : (
+                  <div className="absolute inset-0 bg-[var(--text)]/10" />
+                )}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                 <div className="absolute bottom-0 left-0 right-0 p-4 text-white translate-y-full group-hover:translate-y-0 transition-transform duration-300">
                   <h3 className="text-lg md:text-xl">{model.name}</h3>
