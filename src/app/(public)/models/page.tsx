@@ -297,12 +297,6 @@ export default function ModelsPage() {
                     </div>
                   )}
 
-                  <Link
-                    href={`/models/${hoveredModel.slug}`}
-                    className="block mt-4 text-center py-3 border border-theme text-xs tracking-wider uppercase hover:bg-theme-inverse hover:text-theme-inverse transition-all"
-                  >
-                    View Profile
-                  </Link>
                 </div>
               </div>
             )}

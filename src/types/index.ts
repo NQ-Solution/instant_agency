@@ -72,6 +72,15 @@ export interface SocialLinks {
   youtube?: string;
 }
 
+export interface BusinessInfo {
+  businessNumber?: string;       // 사업자등록번호
+  businessName?: string;         // 상호명
+  representative?: string;       // 대표자명
+  businessAddress?: string;      // 사업장 주소
+  ecommerceNumber?: string;      // 통신판매업 신고번호
+  hostingProvider?: string;      // 호스팅 서비스 제공자
+}
+
 export interface Settings {
   id: string;
   site: {
@@ -84,6 +93,7 @@ export interface Settings {
     phone: string;
     businessHours: string;
   };
+  business?: BusinessInfo;
   offices: Office[];
   social: SocialLinks;
   partners: string[];

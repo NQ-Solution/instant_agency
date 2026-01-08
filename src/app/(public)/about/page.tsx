@@ -1,11 +1,9 @@
+'use client';
+
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import prisma from '@/lib/db';
 import type { AboutPageContent } from '@/types';
-
-// Disable caching to always fetch fresh data
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
 
 const defaultContent: AboutPageContent = {
   hero: {
@@ -44,30 +42,45 @@ const defaultContent: AboutPageContent = {
   },
 };
 
-async function getAboutContent(): Promise<AboutPageContent> {
-  try {
-    const page = await prisma.page.findUnique({ where: { pageId: 'about' } });
-    if (page?.sections && typeof page.sections === 'object') {
-      const sections = page.sections as { content?: AboutPageContent };
-      if (sections.content) {
-        // Deep merge to preserve default values for missing fields
-        return {
-          hero: { ...defaultContent.hero, ...sections.content.hero },
-          story: { ...defaultContent.story, ...sections.content.story },
-          values: { ...defaultContent.values, ...sections.content.values },
-          timeline: { ...defaultContent.timeline, ...sections.content.timeline },
-          cta: { ...defaultContent.cta, ...sections.content.cta },
-        };
+export default function AboutPage() {
+  const [content, setContent] = useState<AboutPageContent>(defaultContent);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const res = await fetch('/api/pages/about', { cache: 'no-store' });
+        const data = await res.json();
+
+        if (data.success && data.data?.sections) {
+          const sections = data.data.sections as { content?: AboutPageContent };
+          if (sections.content) {
+            setContent({
+              hero: { ...defaultContent.hero, ...sections.content.hero },
+              story: { ...defaultContent.story, ...sections.content.story },
+              values: { ...defaultContent.values, ...sections.content.values },
+              timeline: { ...defaultContent.timeline, ...sections.content.timeline },
+              cta: { ...defaultContent.cta, ...sections.content.cta },
+            });
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching about content:', error);
+      } finally {
+        setLoading(false);
       }
     }
-  } catch (error) {
-    console.error('Error fetching about content:', error);
-  }
-  return defaultContent;
-}
 
-export default async function AboutPage() {
-  const content = await getAboutContent();
+    fetchData();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-current"></div>
+      </div>
+    );
+  }
 
   return (
     <div>

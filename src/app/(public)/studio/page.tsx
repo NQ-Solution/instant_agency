@@ -1,11 +1,9 @@
+'use client';
+
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import prisma from '@/lib/db';
 import type { StudioPageContent } from '@/types';
-
-// Disable caching to always fetch fresh data
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
 
 const defaultContent: StudioPageContent = {
   hero: {
@@ -29,27 +27,43 @@ const defaultContent: StudioPageContent = {
   },
 };
 
-async function getStudioContent(): Promise<StudioPageContent> {
-  try {
-    const page = await prisma.page.findUnique({ where: { pageId: 'studio' } });
-    if (page?.sections && typeof page.sections === 'object') {
-      const sections = page.sections as { content?: StudioPageContent };
-      if (sections.content) {
-        return {
-          hero: { ...defaultContent.hero, ...sections.content.hero },
-          info: { ...defaultContent.info, ...sections.content.info },
-          cta: { ...defaultContent.cta, ...sections.content.cta },
-        };
+export default function StudioPage() {
+  const [content, setContent] = useState<StudioPageContent>(defaultContent);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const res = await fetch('/api/pages/studio', { cache: 'no-store' });
+        const data = await res.json();
+
+        if (data.success && data.data?.sections) {
+          const sections = data.data.sections as { content?: StudioPageContent };
+          if (sections.content) {
+            setContent({
+              hero: { ...defaultContent.hero, ...sections.content.hero },
+              info: { ...defaultContent.info, ...sections.content.info },
+              cta: { ...defaultContent.cta, ...sections.content.cta },
+            });
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching studio content:', error);
+      } finally {
+        setLoading(false);
       }
     }
-  } catch (error) {
-    console.error('Error fetching studio content:', error);
-  }
-  return defaultContent;
-}
 
-export default async function StudioPage() {
-  const content = await getStudioContent();
+    fetchData();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-current"></div>
+      </div>
+    );
+  }
 
   return (
     <div>

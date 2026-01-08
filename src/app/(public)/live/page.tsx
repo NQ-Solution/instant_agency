@@ -1,12 +1,31 @@
+'use client';
+
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import prisma from '@/lib/db';
 import type { LivePageContent } from '@/types';
-import type { Creator as PrismaCreator, LiveVideo as PrismaLiveVideo } from '@prisma/client';
 
-// Disable caching to always fetch fresh data
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
+interface Creator {
+  id: string;
+  name: string;
+  platform: string;
+  category: string;
+  image: string;
+  followers: string;
+  views: string;
+}
+
+interface LiveVideo {
+  id: string;
+  tag: string;
+  title: string;
+  creator: string;
+  videoUrl: string;
+  label: string;
+  infoTitle: string;
+  desc: string;
+  stats: { views?: string; conversion?: string };
+}
 
 const defaultContent: LivePageContent = {
   hero: {
@@ -53,56 +72,59 @@ const stats = [
   { value: '200+', label: 'Brand Partners' },
 ];
 
-async function getLiveContent(): Promise<LivePageContent> {
-  try {
-    const page = await prisma.page.findUnique({ where: { pageId: 'live' } });
-    if (page?.sections && typeof page.sections === 'object') {
-      const sections = page.sections as { content?: LivePageContent };
-      if (sections.content) {
-        return {
-          hero: { ...defaultContent.hero, ...sections.content.hero },
-          cta: { ...defaultContent.cta, ...sections.content.cta },
-        };
+export default function LivePage() {
+  const [content, setContent] = useState<LivePageContent>(defaultContent);
+  const [creators, setCreators] = useState<Creator[]>([]);
+  const [liveVideos, setLiveVideos] = useState<LiveVideo[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const [pageRes, creatorsRes, videosRes] = await Promise.all([
+          fetch('/api/pages/live', { cache: 'no-store' }),
+          fetch('/api/creators', { cache: 'no-store' }),
+          fetch('/api/live-videos', { cache: 'no-store' }),
+        ]);
+
+        const pageData = await pageRes.json();
+        const creatorsData = await creatorsRes.json();
+        const videosData = await videosRes.json();
+
+        if (pageData.success && pageData.data?.sections) {
+          const sections = pageData.data.sections as { content?: LivePageContent };
+          if (sections.content) {
+            setContent({
+              hero: { ...defaultContent.hero, ...sections.content.hero },
+              cta: { ...defaultContent.cta, ...sections.content.cta },
+            });
+          }
+        }
+
+        if (creatorsData.success && creatorsData.data) {
+          setCreators(creatorsData.data);
+        }
+
+        if (videosData.success && videosData.data) {
+          setLiveVideos(videosData.data);
+        }
+      } catch (error) {
+        console.error('Error fetching live content:', error);
+      } finally {
+        setLoading(false);
       }
     }
-  } catch (error) {
-    console.error('Error fetching live content:', error);
-  }
-  return defaultContent;
-}
 
-async function getCreators(): Promise<PrismaCreator[]> {
-  try {
-    const creators = await prisma.creator.findMany({
-      where: { active: true },
-      orderBy: { order: 'asc' },
-    });
-    return creators;
-  } catch (error) {
-    console.error('Error fetching creators:', error);
-    return [];
-  }
-}
+    fetchData();
+  }, []);
 
-async function getLiveVideos(): Promise<PrismaLiveVideo[]> {
-  try {
-    const videos = await prisma.liveVideo.findMany({
-      where: { active: true },
-      orderBy: { order: 'asc' },
-    });
-    return videos;
-  } catch (error) {
-    console.error('Error fetching live videos:', error);
-    return [];
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-current"></div>
+      </div>
+    );
   }
-}
-
-export default async function LivePage() {
-  const [content, creators, liveVideos] = await Promise.all([
-    getLiveContent(),
-    getCreators(),
-    getLiveVideos(),
-  ]);
 
   return (
     <div>
@@ -189,11 +211,11 @@ export default async function LivePage() {
                   </p>
                   <div className="flex gap-12">
                     <div>
-                      <p className="text-3xl text-rose-500 mb-1">{(item.stats as { views?: string })?.views || '-'}</p>
+                      <p className="text-3xl text-rose-500 mb-1">{item.stats?.views || '-'}</p>
                       <p className="text-xs tracking-wider uppercase text-muted">Views</p>
                     </div>
                     <div>
-                      <p className="text-3xl text-rose-500 mb-1">{(item.stats as { conversion?: string })?.conversion || '-'}</p>
+                      <p className="text-3xl text-rose-500 mb-1">{item.stats?.conversion || '-'}</p>
                       <p className="text-xs tracking-wider uppercase text-muted">Conversion</p>
                     </div>
                   </div>

@@ -11,6 +11,14 @@ export default function SettingsPage() {
     id: '',
     site: { name: '', tagline: '' },
     contact: { email: '', phone: '', businessHours: '' },
+    business: {
+      businessNumber: '',
+      businessName: '',
+      representative: '',
+      businessAddress: '',
+      ecommerceNumber: '',
+      hostingProvider: '',
+    },
     offices: [],
     social: {},
     partners: [],
@@ -186,6 +194,97 @@ export default function SettingsPage() {
                   setSettings({ ...settings, contact: { ...settings.contact, businessHours: e.target.value } })
                 }
                 placeholder="e.g., Mon - Fri, 10:00 - 19:00"
+                className="w-full px-4 py-3 bg-transparent border border-[var(--text)]/20 rounded-lg focus:outline-none focus:border-[var(--text)]"
+              />
+            </div>
+          </div>
+        </section>
+
+        {/* Business Information */}
+        <section className="border border-[var(--text)]/10 rounded-lg p-6">
+          <h2 className="font-serif text-xl mb-4">사업자 정보</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs tracking-wider uppercase text-[var(--text-muted)] mb-2">
+                사업자등록번호
+              </label>
+              <input
+                type="text"
+                value={settings.business?.businessNumber || ''}
+                onChange={(e) =>
+                  setSettings({ ...settings, business: { ...settings.business, businessNumber: e.target.value } })
+                }
+                placeholder="000-00-00000"
+                className="w-full px-4 py-3 bg-transparent border border-[var(--text)]/20 rounded-lg focus:outline-none focus:border-[var(--text)]"
+              />
+            </div>
+            <div>
+              <label className="block text-xs tracking-wider uppercase text-[var(--text-muted)] mb-2">
+                상호명
+              </label>
+              <input
+                type="text"
+                value={settings.business?.businessName || ''}
+                onChange={(e) =>
+                  setSettings({ ...settings, business: { ...settings.business, businessName: e.target.value } })
+                }
+                placeholder="회사/상호명"
+                className="w-full px-4 py-3 bg-transparent border border-[var(--text)]/20 rounded-lg focus:outline-none focus:border-[var(--text)]"
+              />
+            </div>
+            <div>
+              <label className="block text-xs tracking-wider uppercase text-[var(--text-muted)] mb-2">
+                대표자명
+              </label>
+              <input
+                type="text"
+                value={settings.business?.representative || ''}
+                onChange={(e) =>
+                  setSettings({ ...settings, business: { ...settings.business, representative: e.target.value } })
+                }
+                placeholder="대표자 성함"
+                className="w-full px-4 py-3 bg-transparent border border-[var(--text)]/20 rounded-lg focus:outline-none focus:border-[var(--text)]"
+              />
+            </div>
+            <div>
+              <label className="block text-xs tracking-wider uppercase text-[var(--text-muted)] mb-2">
+                통신판매업 신고번호
+              </label>
+              <input
+                type="text"
+                value={settings.business?.ecommerceNumber || ''}
+                onChange={(e) =>
+                  setSettings({ ...settings, business: { ...settings.business, ecommerceNumber: e.target.value } })
+                }
+                placeholder="제0000-서울강남-00000호"
+                className="w-full px-4 py-3 bg-transparent border border-[var(--text)]/20 rounded-lg focus:outline-none focus:border-[var(--text)]"
+              />
+            </div>
+            <div className="md:col-span-2">
+              <label className="block text-xs tracking-wider uppercase text-[var(--text-muted)] mb-2">
+                사업장 주소
+              </label>
+              <input
+                type="text"
+                value={settings.business?.businessAddress || ''}
+                onChange={(e) =>
+                  setSettings({ ...settings, business: { ...settings.business, businessAddress: e.target.value } })
+                }
+                placeholder="사업장 소재지 주소"
+                className="w-full px-4 py-3 bg-transparent border border-[var(--text)]/20 rounded-lg focus:outline-none focus:border-[var(--text)]"
+              />
+            </div>
+            <div className="md:col-span-2">
+              <label className="block text-xs tracking-wider uppercase text-[var(--text-muted)] mb-2">
+                호스팅 서비스 제공자
+              </label>
+              <input
+                type="text"
+                value={settings.business?.hostingProvider || ''}
+                onChange={(e) =>
+                  setSettings({ ...settings, business: { ...settings.business, hostingProvider: e.target.value } })
+                }
+                placeholder="예: Amazon Web Services, Vercel 등"
                 className="w-full px-4 py-3 bg-transparent border border-[var(--text)]/20 rounded-lg focus:outline-none focus:border-[var(--text)]"
               />
             </div>

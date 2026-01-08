@@ -1,11 +1,9 @@
+'use client';
+
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import prisma from '@/lib/db';
 import type { HomePageContent } from '@/types';
-
-// Disable caching to always fetch fresh data
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
 
 const defaultContent: HomePageContent = {
   hero: {
@@ -40,47 +38,58 @@ const defaultContent: HomePageContent = {
   },
 };
 
-async function getHomeContent(): Promise<HomePageContent> {
-  try {
-    const page = await prisma.page.findUnique({ where: { pageId: 'home' } });
-    if (page?.sections && typeof page.sections === 'object') {
-      const sections = page.sections as { content?: HomePageContent };
-      if (sections.content) {
-        return { ...defaultContent, ...sections.content };
+interface Model {
+  slug: string;
+  name: string;
+  profileImage: string;
+  location: string;
+  category: string;
+  stats: { height?: string };
+}
+
+export default function HomePage() {
+  const [content, setContent] = useState<HomePageContent>(defaultContent);
+  const [featuredModels, setFeaturedModels] = useState<Model[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const [pageRes, modelsRes] = await Promise.all([
+          fetch('/api/pages/home', { cache: 'no-store' }),
+          fetch('/api/models?featured=true', { cache: 'no-store' }),
+        ]);
+
+        const pageData = await pageRes.json();
+        const modelsData = await modelsRes.json();
+
+        if (pageData.success && pageData.data?.sections) {
+          const sections = pageData.data.sections as { content?: HomePageContent };
+          if (sections.content) {
+            setContent({ ...defaultContent, ...sections.content });
+          }
+        }
+
+        if (modelsData.success && modelsData.data) {
+          setFeaturedModels(modelsData.data.slice(0, 8));
+        }
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      } finally {
+        setLoading(false);
       }
     }
-  } catch (error) {
-    console.error('Error fetching home content:', error);
-  }
-  return defaultContent;
-}
 
-async function getFeaturedModels() {
-  try {
-    const models = await prisma.model.findMany({
-      where: { active: true, featured: true },
-      orderBy: { order: 'asc' },
-      take: 8,
-    });
-    return models;
-  } catch (error) {
-    console.error('Error fetching models:', error);
-    return [];
-  }
-}
+    fetchData();
+  }, []);
 
-function ImageWithPlaceholder({ src, alt, className = '' }: { src?: string; alt: string; className?: string }) {
-  if (!src) {
-    return <div className={`bg-[var(--text)]/10 ${className}`} />;
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-current"></div>
+      </div>
+    );
   }
-  return <Image src={src} alt={alt} fill className={`object-cover ${className}`} />;
-}
-
-export default async function HomePage() {
-  const [content, featuredModels] = await Promise.all([
-    getHomeContent(),
-    getFeaturedModels(),
-  ]);
 
   return (
     <div>
@@ -184,7 +193,7 @@ export default async function HomePage() {
                 <div className="absolute bottom-0 left-0 right-0 p-6 text-white translate-y-5 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-400">
                   <h3 className="font-serif text-xl md:text-2xl mb-2">{model.name}</h3>
                   <p className="text-[0.7rem] tracking-[0.2em] uppercase text-gray-400">
-                    {model.location} · {(model.stats as { height?: string })?.height || ''} · {model.category}
+                    {model.location} · {model.stats?.height || ''} · {model.category}
                   </p>
                 </div>
               </Link>

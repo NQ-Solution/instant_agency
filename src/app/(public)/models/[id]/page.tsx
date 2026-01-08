@@ -1,43 +1,91 @@
-import { notFound } from 'next/navigation';
+'use client';
+
+import { useState, useEffect, use } from 'react';
+import { notFound, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 
-async function getModel(id: string) {
-  try {
-    const res = await fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/api/models/${id}`, {
-      cache: 'no-store',
-    });
-
-    if (!res.ok) return null;
-
-    const data = await res.json();
-    return data.success ? data.data : null;
-  } catch {
-    return null;
-  }
+interface ModelData {
+  id: string;
+  name: string;
+  nameKr?: string;
+  slug: string;
+  category: string;
+  profileImage: string;
+  galleryImages: string[];
+  stats: {
+    height?: string;
+    bust?: string;
+    waist?: string;
+    hips?: string;
+    shoes?: string;
+    eyes?: string;
+    hair?: string;
+  };
+  location: string;
+  bio?: string;
+  experience?: { brand: string; year: string }[];
+  social?: {
+    instagram?: string;
+    youtube?: string;
+    tiktok?: string;
+  };
 }
 
-export default async function ModelDetailPage({
+export default function ModelDetailPage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const { id } = await params;
-  const model = await getModel(id);
+  const { id } = use(params);
+  const router = useRouter();
+  const [model, setModel] = useState<ModelData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [notFoundError, setNotFoundError] = useState(false);
 
-  if (!model) {
+  useEffect(() => {
+    async function fetchModel() {
+      try {
+        const res = await fetch(`/api/models/${id}`, { cache: 'no-store' });
+        const data = await res.json();
+
+        if (data.success && data.data) {
+          setModel(data.data);
+        } else {
+          setNotFoundError(true);
+        }
+      } catch (error) {
+        console.error('Error fetching model:', error);
+        setNotFoundError(true);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchModel();
+  }, [id]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-current"></div>
+      </div>
+    );
+  }
+
+  if (notFoundError || !model) {
     notFound();
   }
 
   const stats = [
-    { label: 'Height', value: model.stats.height },
-    { label: 'Bust', value: model.stats.bust },
-    { label: 'Waist', value: model.stats.waist },
-    { label: 'Hips', value: model.stats.hips },
-    { label: 'Shoes', value: model.stats.shoes },
-    { label: 'Eyes', value: model.stats.eyes },
-    { label: 'Hair', value: model.stats.hair },
+    { label: 'Height', value: model.stats?.height },
+    { label: 'Bust', value: model.stats?.bust },
+    { label: 'Waist', value: model.stats?.waist },
+    { label: 'Hips', value: model.stats?.hips },
+    { label: 'Shoes', value: model.stats?.shoes },
+    { label: 'Eyes', value: model.stats?.eyes },
+    { label: 'Hair', value: model.stats?.hair },
   ].filter((s) => s.value);
 
   return (
