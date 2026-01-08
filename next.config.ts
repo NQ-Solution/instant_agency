@@ -10,6 +10,10 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  outputFileTracingIncludes: {
+    '/*': ['./node_modules/.prisma/**/*', './node_modules/@prisma/client/**/*'],
+  },
+  serverExternalPackages: ['@prisma/client'],
 };
 
 export default nextConfig;
