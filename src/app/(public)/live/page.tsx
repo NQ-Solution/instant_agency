@@ -200,15 +200,21 @@ export default function LivePage() {
                 </div>
 
                 <div className="flex flex-col justify-center p-8 lg:p-16 bg-theme-5" style={{ direction: 'ltr' }}>
-                  <p className="text-xs tracking-widest uppercase text-rose-500 mb-6">
-                    {item.label}
-                  </p>
-                  <h3 className="text-3xl md:text-4xl font-normal mb-6 whitespace-pre-line leading-tight">
-                    {item.infoTitle}
-                  </h3>
-                  <p className="text-muted leading-relaxed mb-8">
-                    {item.desc}
-                  </p>
+                  {item.label && (
+                    <p className="text-xs tracking-widest uppercase text-rose-500 mb-6">
+                      {item.label}
+                    </p>
+                  )}
+                  {item.infoTitle && (
+                    <h3 className="text-3xl md:text-4xl font-normal mb-6 whitespace-pre-line leading-tight">
+                      {item.infoTitle}
+                    </h3>
+                  )}
+                  {item.desc && (
+                    <p className="text-muted leading-relaxed mb-8">
+                      {item.desc}
+                    </p>
+                  )}
                   {(item.stats?.views || item.stats?.conversion) && (
                     <div className="flex gap-12">
                       {item.stats?.views && item.stats.views !== '0' && (
