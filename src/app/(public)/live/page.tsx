@@ -19,6 +19,37 @@ const defaultContent: LivePageContent = {
   },
 };
 
+const services = [
+  { num: '01', title: 'Live Management', desc: '크리에이터의 라이브 방송 스케줄링부터 실시간 운영까지 전문적으로 관리합니다.', features: ['스케줄 관리', '실시간 모니터링', '위기 대응'] },
+  { num: '02', title: 'Content Monetization', desc: '다양한 수익화 채널을 통해 크리에이터의 수익을 극대화합니다.', features: ['브랜드 협찬', '커머스 연동', '후원 시스템'] },
+  { num: '03', title: 'Production Support', desc: '고품질 콘텐츠 제작을 위한 스튜디오와 장비를 지원합니다.', features: ['전문 스튜디오', '촬영 장비', '편집 지원'] },
+  { num: '04', title: 'Data Consulting', desc: '데이터 기반의 인사이트로 성장 전략을 제시합니다.', features: ['성과 분석', '트렌드 리포트', '성장 전략'] },
+];
+
+const showcaseItems = [
+  {
+    label: 'To Brands',
+    title: 'Live Entertainment',
+    desc: '실시간으로 소통하며 브랜드의 이야기를 전달합니다. 엔터테인먼트 요소와 커머스를 결합한 새로운 형태의 마케팅을 경험하세요.',
+    features: ['실시간 Q&A 및 소통', '인플루언서 콜라보레이션', '바이럴 콘텐츠 제작'],
+    image: 'https://images.unsplash.com/photo-1611162616475-46b635cb6868?w=1200',
+  },
+  {
+    label: 'To Brands',
+    title: 'Live Commerce Solution',
+    desc: '기획부터 방송, 결제까지 원스톱 라이브 커머스 솔루션을 제공합니다. 전문 호스트와 함께 높은 전환율을 달성하세요.',
+    features: ['전문 쇼호스트 매칭', '결제 시스템 연동', '실시간 데이터 대시보드'],
+    image: 'https://images.unsplash.com/photo-1516321497487-e288fb19713f?w=1200',
+  },
+];
+
+const stats = [
+  { value: '100+', label: 'Creators' },
+  { value: '500M+', label: 'Total Views' },
+  { value: '8.5%', label: 'Avg. Conversion' },
+  { value: '200+', label: 'Brand Partners' },
+];
+
 export default function LivePage() {
   const [content, setContent] = useState<LivePageContent>(defaultContent);
   const [creators, setCreators] = useState<Creator[]>([]);
@@ -167,6 +198,87 @@ export default function LivePage() {
         </section>
       )}
 
+      {/* Services */}
+      <section className="py-16">
+        <div className="text-center mb-16 px-8">
+          <p className="text-xs tracking-widest uppercase text-rose-500 mb-4">
+            For Creators
+          </p>
+          <h2 className="text-4xl md:text-5xl font-normal">
+            What We Offer
+          </h2>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
+          {services.map((service) => (
+            <div
+              key={service.num}
+              className="p-8 border border-theme-10 hover:bg-rose-500/5 transition-colors"
+            >
+              <p className="text-4xl text-rose-500 mb-6">{service.num}</p>
+              <h3 className="text-xl mb-4">{service.title}</h3>
+              <p className="text-sm text-muted leading-relaxed mb-6">{service.desc}</p>
+              <ul className="space-y-2">
+                {service.features.map((feature) => (
+                  <li key={feature} className="text-xs text-muted flex items-center gap-2">
+                    <span className="text-rose-500">→</span>
+                    {feature}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Showcase (To Brands) */}
+      <section className="py-16">
+        {showcaseItems.map((item, index) => (
+          <div
+            key={item.title}
+            className={`grid grid-cols-1 lg:grid-cols-2 min-h-[80vh] ${
+              index % 2 === 1 ? 'lg:flex-row-reverse' : ''
+            }`}
+            style={{ direction: index % 2 === 1 ? 'rtl' : 'ltr' }}
+          >
+            <div className="relative aspect-square lg:aspect-auto overflow-hidden" style={{ direction: 'ltr' }}>
+              <Image
+                src={item.image}
+                alt={item.title}
+                fill
+                className="object-cover grayscale hover:grayscale-0 transition-all duration-700"
+              />
+            </div>
+
+            <div className="flex flex-col justify-center p-8 lg:p-16 bg-theme-5" style={{ direction: 'ltr' }}>
+              <p className="text-xs tracking-widest uppercase text-rose-500 mb-6">
+                {item.label}
+              </p>
+              <h3 className="text-3xl md:text-4xl font-normal mb-6">
+                {item.title}
+              </h3>
+              <p className="text-muted leading-relaxed mb-8">
+                {item.desc}
+              </p>
+              <ul className="space-y-3 mb-8">
+                {item.features.map((feature) => (
+                  <li key={feature} className="flex items-center gap-3 py-2 border-b border-theme-10">
+                    <span className="text-rose-500 text-xs">◇</span>
+                    <span className="text-sm">{feature}</span>
+                  </li>
+                ))}
+              </ul>
+              <Link
+                href="/contact"
+                className="inline-flex items-center gap-2 text-xs tracking-wider uppercase hover:text-rose-500 transition-colors"
+              >
+                Learn More
+                <span>→</span>
+              </Link>
+            </div>
+          </div>
+        ))}
+      </section>
+
       {/* Creators */}
       {creators.length > 0 && (
         <section className="py-16 overflow-hidden">
@@ -211,6 +323,22 @@ export default function LivePage() {
           </div>
         </section>
       )}
+
+      {/* Stats */}
+      <section className="py-16 bg-theme-inverse text-theme-inverse">
+        <div className="grid grid-cols-2 md:grid-cols-4">
+          {stats.map((stat, index) => (
+            <div key={stat.label} className={`py-12 px-8 text-center ${index < stats.length - 1 ? 'border-r border-current/10' : ''}`}>
+              <p className="text-4xl md:text-5xl lg:text-6xl font-normal leading-none mb-2">
+                {stat.value}
+              </p>
+              <p className="text-xs tracking-wider uppercase opacity-60">
+                {stat.label}
+              </p>
+            </div>
+          ))}
+        </div>
+      </section>
 
       {/* CTA */}
       <section className="py-24 px-8 text-center">

@@ -33,6 +33,8 @@ export default function NewModelPage() {
     experience: [] as { brand: string; year: string }[],
     social: {
       instagram: '',
+      youtube: '',
+      tiktok: '',
       portfolioPdf: '',
     },
     featured: false,
@@ -380,7 +382,37 @@ export default function NewModelPage() {
                   ...formData,
                   social: { ...formData.social, instagram: e.target.value }
                 })}
-                placeholder="@username"
+                placeholder="@username 또는 전체 URL"
+                className="w-full px-4 py-3 bg-transparent border border-[var(--text)]/20 rounded-lg focus:outline-none focus:border-[var(--text)]"
+              />
+            </div>
+            <div>
+              <label className="block text-xs tracking-wider uppercase text-[var(--text-muted)] mb-2">
+                YouTube
+              </label>
+              <input
+                type="text"
+                value={formData.social.youtube}
+                onChange={(e) => setFormData({
+                  ...formData,
+                  social: { ...formData.social, youtube: e.target.value }
+                })}
+                placeholder="채널 URL"
+                className="w-full px-4 py-3 bg-transparent border border-[var(--text)]/20 rounded-lg focus:outline-none focus:border-[var(--text)]"
+              />
+            </div>
+            <div>
+              <label className="block text-xs tracking-wider uppercase text-[var(--text-muted)] mb-2">
+                TikTok
+              </label>
+              <input
+                type="text"
+                value={formData.social.tiktok}
+                onChange={(e) => setFormData({
+                  ...formData,
+                  social: { ...formData.social, tiktok: e.target.value }
+                })}
+                placeholder="@username 또는 전체 URL"
                 className="w-full px-4 py-3 bg-transparent border border-[var(--text)]/20 rounded-lg focus:outline-none focus:border-[var(--text)]"
               />
             </div>

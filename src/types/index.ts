@@ -17,6 +17,8 @@ export interface ModelExperience {
 
 export interface ModelSocial {
   instagram?: string;
+  youtube?: string;
+  tiktok?: string;
   portfolioPdf?: string;
 }
 

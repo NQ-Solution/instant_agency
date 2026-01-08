@@ -34,7 +34,7 @@ export default function EditModelPage({ params }: { params: Promise<{ id: string
     location: '',
     bio: '',
     experience: [],
-    social: { instagram: '' },
+    social: { instagram: '', youtube: '', tiktok: '' },
     active: true,
   });
 
@@ -297,17 +297,43 @@ export default function EditModelPage({ params }: { params: Promise<{ id: string
         {/* Social */}
         <section className="border border-[var(--text)]/10 rounded-lg p-6">
           <h2 className="font-serif text-xl mb-4">Social</h2>
-          <div>
-            <label className="block text-xs tracking-wider uppercase text-[var(--text-muted)] mb-2">
-              Instagram
-            </label>
-            <input
-              type="text"
-              value={formData.social?.instagram || ''}
-              onChange={(e) => setFormData({ ...formData, social: { ...formData.social, instagram: e.target.value } })}
-              placeholder="@username"
-              className="w-full px-4 py-3 bg-transparent border border-[var(--text)]/20 rounded-lg focus:outline-none focus:border-[var(--text)]"
-            />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs tracking-wider uppercase text-[var(--text-muted)] mb-2">
+                Instagram
+              </label>
+              <input
+                type="text"
+                value={formData.social?.instagram || ''}
+                onChange={(e) => setFormData({ ...formData, social: { ...formData.social, instagram: e.target.value } })}
+                placeholder="@username 또는 전체 URL"
+                className="w-full px-4 py-3 bg-transparent border border-[var(--text)]/20 rounded-lg focus:outline-none focus:border-[var(--text)]"
+              />
+            </div>
+            <div>
+              <label className="block text-xs tracking-wider uppercase text-[var(--text-muted)] mb-2">
+                YouTube
+              </label>
+              <input
+                type="text"
+                value={formData.social?.youtube || ''}
+                onChange={(e) => setFormData({ ...formData, social: { ...formData.social, youtube: e.target.value } })}
+                placeholder="채널 URL"
+                className="w-full px-4 py-3 bg-transparent border border-[var(--text)]/20 rounded-lg focus:outline-none focus:border-[var(--text)]"
+              />
+            </div>
+            <div>
+              <label className="block text-xs tracking-wider uppercase text-[var(--text-muted)] mb-2">
+                TikTok
+              </label>
+              <input
+                type="text"
+                value={formData.social?.tiktok || ''}
+                onChange={(e) => setFormData({ ...formData, social: { ...formData.social, tiktok: e.target.value } })}
+                placeholder="@username 또는 전체 URL"
+                className="w-full px-4 py-3 bg-transparent border border-[var(--text)]/20 rounded-lg focus:outline-none focus:border-[var(--text)]"
+              />
+            </div>
           </div>
         </section>
 
