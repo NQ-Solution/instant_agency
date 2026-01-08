@@ -68,8 +68,7 @@ export interface Office {
 
 export interface SocialLinks {
   instagram?: string;
-  linkedin?: string;
-  twitter?: string;
+  tiktok?: string;
   youtube?: string;
 }
 

@@ -195,7 +195,7 @@ export default function SettingsPage() {
         {/* Social Links */}
         <section className="border border-[var(--text)]/10 rounded-lg p-6">
           <h2 className="font-serif text-xl mb-4">Social Links</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <label className="block text-xs tracking-wider uppercase text-[var(--text-muted)] mb-2">
                 Instagram
@@ -212,15 +212,29 @@ export default function SettingsPage() {
             </div>
             <div>
               <label className="block text-xs tracking-wider uppercase text-[var(--text-muted)] mb-2">
-                LinkedIn
+                TikTok
               </label>
               <input
                 type="url"
-                value={settings.social?.linkedin || ''}
+                value={settings.social?.tiktok || ''}
                 onChange={(e) =>
-                  setSettings({ ...settings, social: { ...settings.social, linkedin: e.target.value } })
+                  setSettings({ ...settings, social: { ...settings.social, tiktok: e.target.value } })
                 }
-                placeholder="https://linkedin.com/..."
+                placeholder="https://tiktok.com/@..."
+                className="w-full px-4 py-3 bg-transparent border border-[var(--text)]/20 rounded-lg focus:outline-none focus:border-[var(--text)]"
+              />
+            </div>
+            <div>
+              <label className="block text-xs tracking-wider uppercase text-[var(--text-muted)] mb-2">
+                YouTube
+              </label>
+              <input
+                type="url"
+                value={settings.social?.youtube || ''}
+                onChange={(e) =>
+                  setSettings({ ...settings, social: { ...settings.social, youtube: e.target.value } })
+                }
+                placeholder="https://youtube.com/@..."
                 className="w-full px-4 py-3 bg-transparent border border-[var(--text)]/20 rounded-lg focus:outline-none focus:border-[var(--text)]"
               />
             </div>
