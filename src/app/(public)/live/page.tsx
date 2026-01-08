@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import PageGuard from '@/components/public/PageGuard';
-import type { LivePageContent } from '@/types';
+import type { LivePageContent, LiveServiceItem, LiveShowcaseItem, LiveStatItem } from '@/types';
 
 interface Creator {
   id: string;
@@ -28,28 +28,14 @@ interface LiveVideo {
   stats: { views?: string; conversion?: string };
 }
 
-const defaultContent: LivePageContent = {
-  hero: {
-    tag: 'Live Commerce',
-    label: 'Live High With',
-    title: 'Instant Agency',
-    subtitle: '틱톡, 인스타그램 라이브를 통한 실시간 커머스 솔루션.\n크리에이터와 브랜드를 연결하고, 새로운 가능성을 만들어갑니다.',
-  },
-  cta: {
-    title: 'Start Your Live Journey',
-    description: '라이브 커머스로 브랜드의 새로운 가능성을 발견하세요.',
-    buttonText: 'Get Started',
-  },
-};
-
-const services = [
+const defaultServices: LiveServiceItem[] = [
   { num: '01', title: 'Live Management', desc: '크리에이터의 라이브 방송 스케줄링부터 실시간 운영까지 전문적으로 관리합니다.', features: ['스케줄 관리', '실시간 모니터링', '위기 대응'] },
   { num: '02', title: 'Content Monetization', desc: '다양한 수익화 채널을 통해 크리에이터의 수익을 극대화합니다.', features: ['브랜드 협찬', '커머스 연동', '후원 시스템'] },
   { num: '03', title: 'Production Support', desc: '고품질 콘텐츠 제작을 위한 스튜디오와 장비를 지원합니다.', features: ['전문 스튜디오', '촬영 장비', '편집 지원'] },
   { num: '04', title: 'Data Consulting', desc: '데이터 기반의 인사이트로 성장 전략을 제시합니다.', features: ['성과 분석', '트렌드 리포트', '성장 전략'] },
 ];
 
-const showcaseItems = [
+const defaultShowcase: LiveShowcaseItem[] = [
   {
     label: 'To Brands',
     title: 'Live Entertainment',
@@ -66,12 +52,38 @@ const showcaseItems = [
   },
 ];
 
-const stats = [
+const defaultStats: LiveStatItem[] = [
   { value: '100+', label: 'Creators' },
   { value: '500M+', label: 'Total Views' },
   { value: '8.5%', label: 'Avg. Conversion' },
   { value: '200+', label: 'Brand Partners' },
 ];
+
+const defaultContent: LivePageContent = {
+  hero: {
+    tag: 'Live Commerce',
+    label: 'Live High With',
+    title: 'Instant Agency',
+    subtitle: '틱톡, 인스타그램 라이브를 통한 실시간 커머스 솔루션.\n크리에이터와 브랜드를 연결하고, 새로운 가능성을 만들어갑니다.',
+  },
+  services: defaultServices,
+  showcase: defaultShowcase,
+  stats: defaultStats,
+  cta: {
+    title: 'Start Your Live Journey',
+    description: '라이브 커머스로 브랜드의 새로운 가능성을 발견하세요.',
+    buttonText: 'Get Started',
+  },
+  sectionVisibility: {
+    hero: true,
+    videos: true,
+    services: true,
+    showcase: true,
+    creators: true,
+    stats: true,
+    cta: true,
+  },
+};
 
 export default function LivePage() {
   const [content, setContent] = useState<LivePageContent>(defaultContent);
@@ -97,7 +109,11 @@ export default function LivePage() {
           if (sections.content) {
             setContent({
               hero: { ...defaultContent.hero, ...sections.content.hero },
+              services: sections.content.services?.length > 0 ? sections.content.services : defaultServices,
+              showcase: sections.content.showcase?.length > 0 ? sections.content.showcase : defaultShowcase,
+              stats: sections.content.stats?.length > 0 ? sections.content.stats : defaultStats,
               cta: { ...defaultContent.cta, ...sections.content.cta },
+              sectionVisibility: { ...defaultContent.sectionVisibility, ...sections.content.sectionVisibility },
             });
           }
         }
@@ -127,10 +143,13 @@ export default function LivePage() {
     );
   }
 
+  const visibility = content.sectionVisibility || {};
+
   return (
     <PageGuard pageKey="live">
     <div>
       {/* Hero */}
+      {visibility.hero !== false && (
       <section className="min-h-screen flex flex-col justify-center items-center text-center px-8 relative overflow-hidden">
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute top-1/4 left-1/4 w-[40vw] h-[40vw] bg-rose-500/10 rounded-full blur-[100px] animate-pulse" />
@@ -161,9 +180,10 @@ export default function LivePage() {
           <div className="w-px h-16 bg-gradient-to-b from-rose-500 to-transparent animate-scroll-pulse" />
         </div>
       </section>
+      )}
 
       {/* Video Showcase */}
-      {liveVideos.length > 0 && (
+      {visibility.videos !== false && liveVideos.length > 0 && (
         <section className="py-16">
           <div className="text-center mb-12 px-8">
             <p className="text-xs tracking-widest text-rose-500 mb-4">
@@ -231,6 +251,7 @@ export default function LivePage() {
       )}
 
       {/* Services */}
+      {visibility.services !== false && content.services && content.services.length > 0 && (
       <section className="py-16">
         <div className="text-center mb-16 px-8">
           <p className="text-xs tracking-widest uppercase text-rose-500 mb-4">
@@ -241,7 +262,7 @@ export default function LivePage() {
           </h2>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
-          {services.map((service) => (
+          {content.services.map((service) => (
             <div
               key={service.num}
               className="p-8 border border-theme-10 hover:bg-rose-500/5 transition-colors"
@@ -261,10 +282,12 @@ export default function LivePage() {
           ))}
         </div>
       </section>
+      )}
 
       {/* Showcase (To Brands) */}
+      {visibility.showcase !== false && content.showcase && content.showcase.length > 0 && (
       <section className="py-16">
-        {showcaseItems.map((item, index) => (
+        {content.showcase.map((item, index) => (
           <div
             key={item.title}
             className={`grid grid-cols-1 lg:grid-cols-2 min-h-[80vh] ${
@@ -310,9 +333,10 @@ export default function LivePage() {
           </div>
         ))}
       </section>
+      )}
 
       {/* Creators */}
-      {creators.length > 0 && (
+      {visibility.creators !== false && creators.length > 0 && (
         <section className="py-16 overflow-hidden">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-16 px-8 gap-4">
             <div>
@@ -357,10 +381,11 @@ export default function LivePage() {
       )}
 
       {/* Stats */}
+      {visibility.stats !== false && content.stats && content.stats.length > 0 && (
       <section className="py-16 bg-theme-inverse text-theme-inverse">
         <div className="grid grid-cols-2 md:grid-cols-4">
-          {stats.map((stat, index) => (
-            <div key={stat.label} className={`py-12 px-8 text-center ${index < stats.length - 1 ? 'border-r border-current/10' : ''}`}>
+          {content.stats.map((stat, index) => (
+            <div key={stat.label} className={`py-12 px-8 text-center ${index < content.stats.length - 1 ? 'border-r border-current/10' : ''}`}>
               <p className="text-4xl md:text-5xl lg:text-6xl font-normal leading-none mb-2">
                 {stat.value}
               </p>
@@ -371,8 +396,10 @@ export default function LivePage() {
           ))}
         </div>
       </section>
+      )}
 
       {/* CTA */}
+      {visibility.cta !== false && (
       <section className="py-24 px-8 text-center">
         <h2 className="text-3xl md:text-4xl lg:text-5xl font-normal mb-4">
           {content.cta.title}
@@ -387,6 +414,7 @@ export default function LivePage() {
           {content.cta.buttonText}
         </Link>
       </section>
+      )}
     </div>
     </PageGuard>
   );

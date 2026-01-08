@@ -310,6 +310,26 @@ export interface StudioPageContent {
 }
 
 // Live Page Content
+export interface LiveServiceItem {
+  num: string;
+  title: string;
+  desc: string;
+  features: string[];
+}
+
+export interface LiveShowcaseItem {
+  label: string;
+  title: string;
+  desc: string;
+  features: string[];
+  image: string;
+}
+
+export interface LiveStatItem {
+  value: string;
+  label: string;
+}
+
 export interface LivePageContent {
   hero: {
     tag: string;
@@ -317,10 +337,23 @@ export interface LivePageContent {
     title: string;
     subtitle: string;
   };
+  services: LiveServiceItem[];
+  showcase: LiveShowcaseItem[];
+  stats: LiveStatItem[];
   cta: {
     title: string;
     description: string;
     buttonText: string;
+  };
+  // Section visibility
+  sectionVisibility?: {
+    hero?: boolean;
+    videos?: boolean;
+    services?: boolean;
+    showcase?: boolean;
+    creators?: boolean;
+    stats?: boolean;
+    cta?: boolean;
   };
 }
 
