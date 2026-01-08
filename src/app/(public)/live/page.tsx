@@ -164,11 +164,11 @@ export default function LivePage() {
       {liveVideos.length > 0 && (
         <section className="py-16">
           <div className="text-center mb-12 px-8">
-            <p className="text-xs tracking-widest uppercase text-rose-500 mb-4">
+            <p className="text-xs tracking-widest text-rose-500 mb-4">
               Featured Content
             </p>
             <h2 className="text-4xl md:text-5xl font-normal">
-              Live Highlights
+              라이브 하이라이트
             </h2>
           </div>
           <div className="flex flex-col">
@@ -209,16 +209,22 @@ export default function LivePage() {
                   <p className="text-muted leading-relaxed mb-8">
                     {item.desc}
                   </p>
-                  <div className="flex gap-12">
-                    <div>
-                      <p className="text-3xl text-rose-500 mb-1">{item.stats?.views || '-'}</p>
-                      <p className="text-xs tracking-wider uppercase text-muted">Views</p>
+                  {(item.stats?.views || item.stats?.conversion) && (
+                    <div className="flex gap-12">
+                      {item.stats?.views && item.stats.views !== '0' && (
+                        <div>
+                          <p className="text-3xl text-rose-500 mb-1">{item.stats.views}</p>
+                          <p className="text-xs tracking-wider text-muted">조회수</p>
+                        </div>
+                      )}
+                      {item.stats?.conversion && item.stats.conversion !== '0' && item.stats.conversion !== '0%' && (
+                        <div>
+                          <p className="text-3xl text-rose-500 mb-1">{item.stats.conversion}</p>
+                          <p className="text-xs tracking-wider text-muted">전환율</p>
+                        </div>
+                      )}
                     </div>
-                    <div>
-                      <p className="text-3xl text-rose-500 mb-1">{item.stats?.conversion || '-'}</p>
-                      <p className="text-xs tracking-wider uppercase text-muted">Conversion</p>
-                    </div>
-                  </div>
+                  )}
                 </div>
               </div>
             ))}
