@@ -2,9 +2,11 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Upload, Plus, X } from 'lucide-react';
+import { ArrowLeft, Plus, X } from 'lucide-react';
 import Link from 'next/link';
 import { generateSlug } from '@/lib/utils';
+import ImageUpload from '@/components/admin/ImageUpload';
+import MultiImageUpload from '@/components/admin/MultiImageUpload';
 
 export default function NewModelPage() {
   const router = useRouter();
@@ -165,21 +167,31 @@ export default function NewModelPage() {
         {/* Images */}
         <section className="border border-[var(--text)]/10 rounded-lg p-6">
           <h2 className="font-serif text-xl mb-6">Images</h2>
-          <div>
-            <label className="block text-xs tracking-wider uppercase text-[var(--text-muted)] mb-2">
-              Profile Image URL *
-            </label>
-            <input
-              type="url"
-              value={formData.profileImage}
-              onChange={(e) => setFormData({ ...formData, profileImage: e.target.value })}
-              placeholder="https://..."
-              className="w-full px-4 py-3 bg-transparent border border-[var(--text)]/20 rounded-lg focus:outline-none focus:border-[var(--text)]"
-              required
-            />
-            <p className="text-xs text-[var(--text-muted)] mt-2">
-              Enter the URL of the profile image (Cloudinary upload coming soon)
-            </p>
+          <div className="space-y-6">
+            <div>
+              <label className="block text-xs tracking-wider uppercase text-[var(--text-muted)] mb-3">
+                Profile Image *
+              </label>
+              <ImageUpload
+                value={formData.profileImage}
+                onChange={(url) => setFormData({ ...formData, profileImage: url })}
+                folder="models"
+                aspectRatio="portrait"
+                placeholder="프로필 이미지 업로드"
+              />
+            </div>
+            <div>
+              <label className="block text-xs tracking-wider uppercase text-[var(--text-muted)] mb-3">
+                Gallery Images
+              </label>
+              <MultiImageUpload
+                values={formData.galleryImages}
+                onChange={(urls) => setFormData({ ...formData, galleryImages: urls })}
+                folder="models"
+                maxImages={12}
+                placeholder="갤러리 이미지 추가"
+              />
+            </div>
           </div>
         </section>
 

@@ -290,6 +290,21 @@ export interface LivePageContent {
   };
 }
 
+// Models Page Content
+export interface ModelsPageContent {
+  hero: {
+    tag: string;
+    label: string;
+    title: string;
+    subtitle: string;
+  };
+  cta: {
+    title: string;
+    description: string;
+    buttonText: string;
+  };
+}
+
 // Contact Page Content
 export interface ContactPageContent {
   hero: {

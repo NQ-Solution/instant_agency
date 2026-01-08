@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Save } from 'lucide-react';
 import Link from 'next/link';
+import ImageUpload from '@/components/admin/ImageUpload';
 
 export default function NewCreatorPage() {
   const router = useRouter();
@@ -103,15 +104,15 @@ export default function NewCreatorPage() {
         </div>
 
         <div>
-          <label className="block text-xs tracking-wider uppercase text-[var(--text-muted)] mb-2">
-            Profile Image URL
+          <label className="block text-xs tracking-wider uppercase text-[var(--text-muted)] mb-3">
+            Profile Image
           </label>
-          <input
-            type="url"
+          <ImageUpload
             value={formData.image}
-            onChange={(e) => setFormData({ ...formData, image: e.target.value })}
-            placeholder="https://..."
-            className="w-full px-4 py-3 bg-transparent border border-[var(--text)]/20 rounded-lg focus:outline-none focus:border-[var(--text)]"
+            onChange={(url) => setFormData({ ...formData, image: url })}
+            folder="creators"
+            aspectRatio="square"
+            placeholder="프로필 이미지 업로드"
           />
         </div>
 

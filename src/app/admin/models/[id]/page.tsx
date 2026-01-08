@@ -1,21 +1,18 @@
 'use client';
 
-import { useState, useEffect, use, useRef } from 'react';
+import { useState, useEffect, use } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Save, Plus, Trash2, Upload, X, Image as ImageIcon } from 'lucide-react';
+import { ArrowLeft, Save, Plus, Trash2 } from 'lucide-react';
 import Link from 'next/link';
-import Image from 'next/image';
 import type { Model } from '@/types';
+import ImageUpload from '@/components/admin/ImageUpload';
+import MultiImageUpload from '@/components/admin/MultiImageUpload';
 
 export default function EditModelPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [uploading, setUploading] = useState(false);
-  const [uploadingGallery, setUploadingGallery] = useState(false);
-  const profileInputRef = useRef<HTMLInputElement>(null);
-  const galleryInputRef = useRef<HTMLInputElement>(null);
 
   const [formData, setFormData] = useState<Partial<Model>>({
     name: '',
@@ -81,92 +78,6 @@ export default function EditModelPage({ params }: { params: Promise<{ id: string
     } finally {
       setSaving(false);
     }
-  };
-
-  // Profile image upload
-  const handleProfileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    setUploading(true);
-    try {
-      const formDataUpload = new FormData();
-      formDataUpload.append('file', file);
-      formDataUpload.append('folder', 'models');
-
-      const res = await fetch('/api/upload', {
-        method: 'POST',
-        body: formDataUpload,
-      });
-
-      const data = await res.json();
-      if (data.success) {
-        setFormData({ ...formData, profileImage: data.data.url });
-      } else {
-        alert(data.error || 'Failed to upload image');
-      }
-    } catch (error) {
-      console.error('Error uploading profile image:', error);
-      alert('Failed to upload image');
-    } finally {
-      setUploading(false);
-      if (profileInputRef.current) {
-        profileInputRef.current.value = '';
-      }
-    }
-  };
-
-  // Gallery images upload
-  const handleGalleryUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files || files.length === 0) return;
-
-    setUploadingGallery(true);
-    const newImages: string[] = [];
-
-    try {
-      for (const file of Array.from(files)) {
-        const formDataUpload = new FormData();
-        formDataUpload.append('file', file);
-        formDataUpload.append('folder', 'models/gallery');
-
-        const res = await fetch('/api/upload', {
-          method: 'POST',
-          body: formDataUpload,
-        });
-
-        const data = await res.json();
-        if (data.success) {
-          newImages.push(data.data.url);
-        }
-      }
-
-      setFormData({
-        ...formData,
-        galleryImages: [...(formData.galleryImages || []), ...newImages],
-      });
-    } catch (error) {
-      console.error('Error uploading gallery images:', error);
-      alert('Failed to upload some images');
-    } finally {
-      setUploadingGallery(false);
-      if (galleryInputRef.current) {
-        galleryInputRef.current.value = '';
-      }
-    }
-  };
-
-  // Remove gallery image
-  const removeGalleryImage = (index: number) => {
-    setFormData({
-      ...formData,
-      galleryImages: formData.galleryImages?.filter((_, i) => i !== index) || [],
-    });
-  };
-
-  // Remove profile image
-  const removeProfileImage = () => {
-    setFormData({ ...formData, profileImage: '' });
   };
 
   const addExperience = () => {
@@ -269,134 +180,35 @@ export default function EditModelPage({ params }: { params: Promise<{ id: string
           </div>
         </section>
 
-        {/* Profile Image */}
+        {/* Images */}
         <section className="border border-[var(--text)]/10 rounded-lg p-6">
-          <h2 className="font-serif text-xl mb-4">Profile Image</h2>
-          <div className="space-y-4">
-            {formData.profileImage ? (
-              <div className="relative inline-block">
-                <div className="w-40 h-52 relative rounded-lg overflow-hidden">
-                  <Image
-                    src={formData.profileImage}
-                    alt="Profile preview"
-                    fill
-                    className="object-cover"
-                  />
-                </div>
-                <button
-                  type="button"
-                  onClick={removeProfileImage}
-                  className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600"
-                >
-                  <X size={14} />
-                </button>
-              </div>
-            ) : (
-              <div
-                onClick={() => profileInputRef.current?.click()}
-                className="w-40 h-52 border-2 border-dashed border-[var(--text)]/20 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-[var(--text)]/40 transition-colors"
-              >
-                {uploading ? (
-                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[var(--text)]" />
-                ) : (
-                  <>
-                    <ImageIcon size={32} className="text-[var(--text-muted)] mb-2" />
-                    <span className="text-xs text-[var(--text-muted)]">Click to upload</span>
-                  </>
-                )}
-              </div>
-            )}
-            <input
-              ref={profileInputRef}
-              type="file"
-              accept="image/*"
-              onChange={handleProfileUpload}
-              className="hidden"
-            />
-            {formData.profileImage && (
-              <button
-                type="button"
-                onClick={() => profileInputRef.current?.click()}
-                disabled={uploading}
-                className="flex items-center gap-2 px-4 py-2 text-sm border border-[var(--text)]/20 rounded-lg hover:bg-[var(--text)]/5 disabled:opacity-50"
-              >
-                <Upload size={16} />
-                {uploading ? 'Uploading...' : 'Change Image'}
-              </button>
-            )}
+          <h2 className="font-serif text-xl mb-6">Images</h2>
+          <div className="space-y-6">
             <div>
-              <label className="block text-xs tracking-wider uppercase text-[var(--text-muted)] mb-2">
-                Or enter URL directly
+              <label className="block text-xs tracking-wider uppercase text-[var(--text-muted)] mb-3">
+                Profile Image *
               </label>
-              <input
-                type="url"
+              <ImageUpload
                 value={formData.profileImage || ''}
-                onChange={(e) => setFormData({ ...formData, profileImage: e.target.value })}
-                placeholder="https://..."
-                className="w-full px-4 py-3 bg-transparent border border-[var(--text)]/20 rounded-lg focus:outline-none focus:border-[var(--text)]"
+                onChange={(url) => setFormData({ ...formData, profileImage: url })}
+                folder="models"
+                aspectRatio="portrait"
+                placeholder="프로필 이미지 업로드"
+              />
+            </div>
+            <div>
+              <label className="block text-xs tracking-wider uppercase text-[var(--text-muted)] mb-3">
+                Gallery Images
+              </label>
+              <MultiImageUpload
+                values={formData.galleryImages || []}
+                onChange={(urls) => setFormData({ ...formData, galleryImages: urls })}
+                folder="models"
+                maxImages={12}
+                placeholder="갤러리 이미지 추가"
               />
             </div>
           </div>
-        </section>
-
-        {/* Gallery Images */}
-        <section className="border border-[var(--text)]/10 rounded-lg p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="font-serif text-xl">Gallery Images</h2>
-            <span className="text-sm text-[var(--text-muted)]">
-              {formData.galleryImages?.length || 0} images
-            </span>
-          </div>
-
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 mb-4">
-            {formData.galleryImages?.map((image, index) => (
-              <div key={index} className="relative group">
-                <div className="aspect-[3/4] relative rounded-lg overflow-hidden">
-                  <Image
-                    src={image}
-                    alt={`Gallery ${index + 1}`}
-                    fill
-                    className="object-cover"
-                  />
-                </div>
-                <button
-                  type="button"
-                  onClick={() => removeGalleryImage(index)}
-                  className="absolute top-2 right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600"
-                >
-                  <X size={14} />
-                </button>
-              </div>
-            ))}
-
-            {/* Upload button */}
-            <div
-              onClick={() => galleryInputRef.current?.click()}
-              className="aspect-[3/4] border-2 border-dashed border-[var(--text)]/20 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-[var(--text)]/40 transition-colors"
-            >
-              {uploadingGallery ? (
-                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[var(--text)]" />
-              ) : (
-                <>
-                  <Plus size={24} className="text-[var(--text-muted)] mb-1" />
-                  <span className="text-xs text-[var(--text-muted)]">Add Images</span>
-                </>
-              )}
-            </div>
-          </div>
-
-          <input
-            ref={galleryInputRef}
-            type="file"
-            accept="image/*"
-            multiple
-            onChange={handleGalleryUpload}
-            className="hidden"
-          />
-
-          <p className="text-xs text-[var(--text-muted)]">
-            Click the + button to upload multiple images. Supported formats: JPEG, PNG, GIF, WEBP (Max 10MB each)
-          </p>
         </section>
 
         {/* Stats */}

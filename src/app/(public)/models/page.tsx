@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import type { Model } from '@/types';
+import type { Model, ModelsPageContent } from '@/types';
 
 const categories = [
   { id: 'all', label: 'All' },
@@ -12,27 +12,52 @@ const categories = [
   { id: 'new', label: 'New Faces' },
 ];
 
+const defaultContent: ModelsPageContent = {
+  hero: {
+    tag: 'Model Agency',
+    label: 'Discover Extraordinary',
+    title: 'Talent',
+    subtitle: '국내외 최고의 패션 모델들과 함께합니다',
+  },
+  cta: {
+    title: 'Become a Model',
+    description: 'Join our roster of talented models',
+    buttonText: 'Apply Now',
+  },
+};
+
 export default function ModelsPage() {
+  const [content, setContent] = useState<ModelsPageContent>(defaultContent);
   const [models, setModels] = useState<Model[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState('all');
 
   useEffect(() => {
-    const fetchModels = async () => {
+    const fetchData = async () => {
       try {
-        const res = await fetch('/api/models');
-        const data = await res.json();
-        if (data.success) {
-          setModels(data.data || []);
+        const [pageRes, modelsRes] = await Promise.all([
+          fetch('/api/pages/models'),
+          fetch('/api/models'),
+        ]);
+
+        const pageData = await pageRes.json();
+        const modelsData = await modelsRes.json();
+
+        if (pageData.success && pageData.data?.sections?.content) {
+          setContent({ ...defaultContent, ...pageData.data.sections.content });
+        }
+
+        if (modelsData.success) {
+          setModels(modelsData.data || []);
         }
       } catch (error) {
-        console.error('Error fetching models:', error);
+        console.error('Error fetching data:', error);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchModels();
+    fetchData();
   }, []);
 
   const filteredModels = models.filter(
@@ -41,21 +66,29 @@ export default function ModelsPage() {
 
   const featuredModels = models.filter((m) => m.featured).slice(0, 2);
 
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--text)]"></div>
+      </div>
+    );
+  }
+
   return (
     <div>
       {/* Hero */}
       <section className="min-h-screen flex flex-col justify-center items-center text-center px-8 relative">
         <span className="inline-block px-4 py-2 border border-theme-30 text-xs tracking-[0.3em] uppercase mb-8 animate-fade-up">
-          Model Agency
+          {content.hero.tag}
         </span>
         <p className="text-xs tracking-[0.3em] uppercase text-muted mb-6 animate-fade-up">
-          Discover Extraordinary
+          {content.hero.label}
         </p>
         <h1 className="font-logo text-[clamp(4rem,15vw,12rem)] font-normal leading-[0.9] tracking-[-0.02em] animate-fade-up">
-          Talent
+          {content.hero.title}
         </h1>
         <p className="text-muted mt-8 max-w-xl mx-auto leading-relaxed animate-fade-up-delay">
-          국내외 최고의 패션 모델들과 함께합니다
+          {content.hero.subtitle}
         </p>
 
         {/* Scroll Indicator */}
@@ -92,7 +125,7 @@ export default function ModelsPage() {
                   </span>
                   <h2 className="text-2xl md:text-3xl mb-2">{model.name}</h2>
                   <p className="text-sm opacity-80">
-                    {model.stats.height}cm · {model.location}
+                    {(model.stats as { height?: string })?.height || ''}cm · {model.location}
                   </p>
                 </div>
               </Link>
@@ -122,41 +155,35 @@ export default function ModelsPage() {
 
       {/* Models Grid */}
       <section className="pb-24">
-        {loading ? (
-          <div className="flex justify-center py-16">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-current" />
-          </div>
-        ) : (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-            {filteredModels.map((model) => (
-              <Link
-                key={model.id}
-                href={`/models/${model.slug}`}
-                className="group block relative aspect-[3/4] overflow-hidden"
-              >
-                {model.profileImage ? (
-                  <Image
-                    src={model.profileImage}
-                    alt={model.name}
-                    fill
-                    className="object-cover grayscale group-hover:grayscale-0 group-hover:scale-105 transition-all duration-500"
-                  />
-                ) : (
-                  <div className="absolute inset-0 bg-[var(--text)]/10" />
-                )}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                <div className="absolute bottom-0 left-0 right-0 p-4 text-white translate-y-full group-hover:translate-y-0 transition-transform duration-300">
-                  <h3 className="text-lg md:text-xl">{model.name}</h3>
-                  <p className="text-xs tracking-wider uppercase opacity-80">
-                    {model.stats.height}cm · {model.location}
-                  </p>
-                </div>
-              </Link>
-            ))}
-          </div>
-        )}
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+          {filteredModels.map((model) => (
+            <Link
+              key={model.id}
+              href={`/models/${model.slug}`}
+              className="group block relative aspect-[3/4] overflow-hidden"
+            >
+              {model.profileImage ? (
+                <Image
+                  src={model.profileImage}
+                  alt={model.name}
+                  fill
+                  className="object-cover grayscale group-hover:grayscale-0 group-hover:scale-105 transition-all duration-500"
+                />
+              ) : (
+                <div className="absolute inset-0 bg-[var(--text)]/10" />
+              )}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              <div className="absolute bottom-0 left-0 right-0 p-4 text-white translate-y-full group-hover:translate-y-0 transition-transform duration-300">
+                <h3 className="text-lg md:text-xl">{model.name}</h3>
+                <p className="text-xs tracking-wider uppercase opacity-80">
+                  {(model.stats as { height?: string })?.height || ''}cm · {model.location}
+                </p>
+              </div>
+            </Link>
+          ))}
+        </div>
 
-        {!loading && filteredModels.length === 0 && (
+        {filteredModels.length === 0 && (
           <div className="text-center py-16">
             <p className="text-muted">No models found</p>
           </div>
@@ -165,15 +192,13 @@ export default function ModelsPage() {
 
       {/* CTA */}
       <section className="py-16 px-8 text-center border-t border-theme-10">
-        <h2 className="text-2xl md:text-3xl mb-4">Become a Model</h2>
-        <p className="text-muted mb-8">
-          Join our roster of talented models
-        </p>
+        <h2 className="text-2xl md:text-3xl mb-4">{content.cta.title}</h2>
+        <p className="text-muted mb-8">{content.cta.description}</p>
         <Link
           href="/contact"
           className="inline-block px-8 py-4 border border-theme text-sm tracking-wider uppercase hover:bg-theme-inverse hover:text-theme-inverse transition-all duration-300"
         >
-          Apply Now
+          {content.cta.buttonText}
         </Link>
       </section>
     </div>
