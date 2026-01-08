@@ -107,7 +107,7 @@ export default function BookingCalendar() {
         .filter(slot => slot.date === dateStr)
         .map(slot => slot.time);
 
-      const availableCount = isWeekend ? 0 : availableTimes.length - bookedTimes.length;
+      const availableCount = availableTimes.length - bookedTimes.length;
 
       days.push({
         day,
@@ -116,7 +116,7 @@ export default function BookingCalendar() {
         isToday,
         isWeekend,
         hasSlots: availableCount > 0,
-        isFullyBooked: !isWeekend && availableCount === 0,
+        isFullyBooked: availableCount === 0,
       });
     }
 
@@ -238,20 +238,19 @@ export default function BookingCalendar() {
             return (
               <button
                 key={index}
-                disabled={!dayInfo.day || dayInfo.isPast || dayInfo.isWeekend}
+                disabled={!dayInfo.day || dayInfo.isPast}
                 onClick={() => handleDateSelect(dayInfo.date)}
                 className={`
                   aspect-square flex items-center justify-center text-sm relative transition-all
                   ${!dayInfo.day ? 'cursor-default' : ''}
                   ${dayInfo.isPast ? 'opacity-30 cursor-not-allowed' : ''}
-                  ${dayInfo.isWeekend && !dayInfo.isPast ? 'opacity-50 cursor-not-allowed' : ''}
-                  ${dayInfo.day && !dayInfo.isPast && !dayInfo.isWeekend ? 'border border-[var(--text)]/10 hover:border-[var(--text)]' : ''}
+                  ${dayInfo.day && !dayInfo.isPast ? 'border border-[var(--text)]/10 hover:border-[var(--text)]' : ''}
                   ${dayInfo.isToday ? 'border-[var(--text)]' : ''}
                   ${isSelected ? 'bg-theme-inverse text-theme-inverse border-theme' : ''}
                 `}
               >
                 {dayInfo.day}
-                {dayInfo.day && !dayInfo.isPast && !dayInfo.isWeekend && (
+                {dayInfo.day && !dayInfo.isPast && (
                   <span
                     className={`absolute bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full ${
                       dayInfo.isFullyBooked ? 'bg-red-500' : dayInfo.hasSlots ? 'bg-green-500' : ''
@@ -276,7 +275,7 @@ export default function BookingCalendar() {
             </span>
           </div>
 
-          {selectedDate && selectedDate.getDay() !== 0 && selectedDate.getDay() !== 6 ? (
+          {selectedDate ? (
             <div className="grid grid-cols-4 gap-2">
               {availableTimes.map((time) => {
                 const booked = isTimeBooked(time);
@@ -308,10 +307,6 @@ export default function BookingCalendar() {
                   </button>
                 );
               })}
-            </div>
-          ) : selectedDate ? (
-            <div className="text-center py-8 text-[var(--text-muted)]">
-              Closed on weekends
             </div>
           ) : (
             <div className="text-center py-8 text-[var(--text-muted)]">

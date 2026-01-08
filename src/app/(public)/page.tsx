@@ -116,53 +116,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Divisions Section */}
-      {content.divisions.items.length > 0 && (
-        <section className="min-h-screen flex flex-col justify-center pt-16">
-          <div className="text-center px-8 mb-16">
-            <p className="text-xs tracking-[0.3em] uppercase text-muted mb-4">{content.divisions.sectionNumber}</p>
-            <h2 className="font-serif text-4xl md:text-5xl lg:text-6xl font-normal">
-              {content.divisions.title}
-            </h2>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3">
-            {content.divisions.items.map((division) => (
-              <Link
-                key={division.id}
-                href={division.href}
-                className="group relative aspect-[4/5] overflow-hidden block"
-              >
-                {division.image ? (
-                  <Image
-                    src={division.image}
-                    alt={division.title}
-                    fill
-                    className="object-cover grayscale group-hover:grayscale-[50%] group-hover:scale-105 transition-all duration-600"
-                  />
-                ) : (
-                  <div className="absolute inset-0 bg-[var(--text)]/10" />
-                )}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent" />
-                <div className="absolute bottom-0 left-0 right-0 p-8 lg:p-12 text-white">
-                  <p className="text-[0.65rem] tracking-[0.3em] text-gray-400 mb-4">
-                    {division.number}
-                  </p>
-                  <h3 className="font-serif text-2xl md:text-3xl lg:text-4xl mb-4 tracking-wide">
-                    {division.title}
-                  </h3>
-                  <p className="text-sm leading-relaxed text-gray-400 mb-6 max-w-[300px]">
-                    {division.desc}
-                  </p>
-                  <span className="inline-flex items-center gap-2 text-xs tracking-[0.2em] uppercase text-white opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-400">
-                    Explore <span className="group-hover:translate-x-1 transition-transform">→</span>
-                  </span>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </section>
-      )}
-
       {/* Featured Models */}
       {featuredModels.length > 0 && (
         <section className="min-h-screen flex flex-col justify-center pt-16">
@@ -206,6 +159,53 @@ export default function HomePage() {
             >
               {content.talents.buttonText}
             </Link>
+          </div>
+        </section>
+      )}
+
+      {/* Divisions Section */}
+      {content.divisions.items.length > 0 && (
+        <section className="min-h-screen flex flex-col justify-center pt-16">
+          <div className="text-center px-8 mb-16">
+            <p className="text-xs tracking-[0.3em] uppercase text-muted mb-4">{content.divisions.sectionNumber}</p>
+            <h2 className="font-serif text-4xl md:text-5xl lg:text-6xl font-normal">
+              {content.divisions.title}
+            </h2>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3">
+            {content.divisions.items.map((division) => (
+              <Link
+                key={division.id}
+                href={division.href}
+                className="group relative aspect-[4/5] overflow-hidden block"
+              >
+                {division.image ? (
+                  <Image
+                    src={division.image}
+                    alt={division.title}
+                    fill
+                    className="object-cover grayscale group-hover:grayscale-[50%] group-hover:scale-105 transition-all duration-600"
+                  />
+                ) : (
+                  <div className="absolute inset-0 bg-[var(--text)]/10" />
+                )}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent" />
+                <div className="absolute bottom-0 left-0 right-0 p-8 lg:p-12 text-white">
+                  <p className="text-[0.65rem] tracking-[0.3em] text-gray-400 mb-4">
+                    {division.number}
+                  </p>
+                  <h3 className="font-serif text-2xl md:text-3xl lg:text-4xl mb-4 tracking-wide">
+                    {division.title}
+                  </h3>
+                  <p className="text-sm leading-relaxed text-gray-400 mb-6 max-w-[300px]">
+                    {division.desc}
+                  </p>
+                  <span className="inline-flex items-center gap-2 text-xs tracking-[0.2em] uppercase text-white opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-400">
+                    Explore <span className="group-hover:translate-x-1 transition-transform">→</span>
+                  </span>
+                </div>
+              </Link>
+            ))}
           </div>
         </section>
       )}
