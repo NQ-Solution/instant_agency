@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Save, Plus, Trash2 } from 'lucide-react';
+import { Save, Plus, Trash2, Eye, EyeOff } from 'lucide-react';
 import type { Settings } from '@/types';
 
 export default function SettingsPage() {
@@ -18,6 +18,14 @@ export default function SettingsPage() {
       businessAddress: '',
       ecommerceNumber: '',
       hostingProvider: '',
+    },
+    pageVisibility: {
+      home: true,
+      about: true,
+      models: true,
+      studio: true,
+      live: true,
+      contact: true,
     },
     offices: [],
     social: {},
@@ -150,6 +158,54 @@ export default function SettingsPage() {
                 className="w-full px-4 py-3 bg-transparent border border-[var(--text)]/20 rounded-lg focus:outline-none focus:border-[var(--text)]"
               />
             </div>
+          </div>
+        </section>
+
+        {/* Page Visibility */}
+        <section className="border border-[var(--text)]/10 rounded-lg p-6">
+          <h2 className="font-serif text-xl mb-4">페이지 공개 설정</h2>
+          <p className="text-sm text-[var(--text-muted)] mb-4">각 페이지의 공개/비공개 상태를 설정합니다.</p>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+            {[
+              { key: 'home', label: 'Home', path: '/' },
+              { key: 'about', label: 'About', path: '/about' },
+              { key: 'models', label: 'Models', path: '/models' },
+              { key: 'studio', label: 'Studio', path: '/studio' },
+              { key: 'live', label: 'Live', path: '/live' },
+              { key: 'contact', label: 'Contact', path: '/contact' },
+            ].map((page) => {
+              const isVisible = settings.pageVisibility?.[page.key as keyof typeof settings.pageVisibility] !== false;
+              return (
+                <button
+                  key={page.key}
+                  type="button"
+                  onClick={() =>
+                    setSettings({
+                      ...settings,
+                      pageVisibility: {
+                        ...settings.pageVisibility,
+                        [page.key]: !isVisible,
+                      },
+                    })
+                  }
+                  className={`flex items-center justify-between p-4 rounded-lg border transition-all ${
+                    isVisible
+                      ? 'border-green-500/50 bg-green-500/10'
+                      : 'border-red-500/50 bg-red-500/10'
+                  }`}
+                >
+                  <div className="text-left">
+                    <p className="font-medium">{page.label}</p>
+                    <p className="text-xs text-[var(--text-muted)]">{page.path}</p>
+                  </div>
+                  {isVisible ? (
+                    <Eye size={20} className="text-green-500" />
+                  ) : (
+                    <EyeOff size={20} className="text-red-500" />
+                  )}
+                </button>
+              );
+            })}
           </div>
         </section>
 

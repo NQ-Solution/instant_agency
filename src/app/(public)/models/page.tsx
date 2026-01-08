@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import PageGuard from '@/components/public/PageGuard';
 import type { Model, ModelsPageContent } from '@/types';
 
 const categories = [
@@ -95,6 +96,7 @@ export default function ModelsPage() {
   const modelSocial = hoveredModel?.social as { instagram?: string; tiktok?: string; youtube?: string } | undefined;
 
   return (
+    <PageGuard pageKey="models">
     <div>
       {/* Hero */}
       <section className="min-h-screen flex flex-col justify-center items-center text-center px-8 relative">
@@ -316,5 +318,6 @@ export default function ModelsPage() {
         </Link>
       </section>
     </div>
+    </PageGuard>
   );
 }

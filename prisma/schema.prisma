@@ -80,15 +80,16 @@ model Page {
 
 // Settings (설정)
 model Settings {
-  id        String   @id @default(cuid())
-  site      Json     @default("{}") // { name, logo, tagline }
-  contact   Json     @default("{}") // { email, phone, businessHours }
-  business  Json     @default("{}") // { businessNumber, businessName, representative, businessAddress, ecommerceNumber, hostingProvider }
-  offices   Json     @default("[]") // [{ city, address }]
-  social    Json     @default("{}") // { instagram, linkedin, twitter, youtube }
-  partners  String[] @default([])
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id             String   @id @default(cuid())
+  site           Json     @default("{}") // { name, logo, tagline }
+  contact        Json     @default("{}") // { email, phone, businessHours }
+  business       Json     @default("{}") // { businessNumber, businessName, representative, businessAddress, ecommerceNumber, hostingProvider }
+  pageVisibility Json     @default("{}") // { home, about, models, studio, live, contact } - true = visible, false = hidden
+  offices        Json     @default("[]") // [{ city, address }]
+  social         Json     @default("{}") // { instagram, linkedin, twitter, youtube }
+  partners       String[] @default([])
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 }
 
 // Image (이미지 저장 - DB에 Base64로 저장)

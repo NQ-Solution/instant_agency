@@ -81,6 +81,15 @@ export interface BusinessInfo {
   hostingProvider?: string;      // 호스팅 서비스 제공자
 }
 
+export interface PageVisibility {
+  home?: boolean;
+  about?: boolean;
+  models?: boolean;
+  studio?: boolean;
+  live?: boolean;
+  contact?: boolean;
+}
+
 export interface Settings {
   id: string;
   site: {
@@ -94,6 +103,7 @@ export interface Settings {
     businessHours: string;
   };
   business?: BusinessInfo;
+  pageVisibility?: PageVisibility;
   offices: Office[];
   social: SocialLinks;
   partners: string[];

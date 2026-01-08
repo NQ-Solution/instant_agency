@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import PageGuard from '@/components/public/PageGuard';
 import type { AboutPageContent } from '@/types';
 
 const defaultContent: AboutPageContent = {
@@ -83,6 +84,7 @@ export default function AboutPage() {
   }
 
   return (
+    <PageGuard pageKey="about">
     <div>
       {/* Hero */}
       <section className="min-h-screen flex flex-col justify-center items-center text-center px-8 relative">
@@ -205,5 +207,6 @@ export default function AboutPage() {
         </Link>
       </section>
     </div>
+    </PageGuard>
   );
 }

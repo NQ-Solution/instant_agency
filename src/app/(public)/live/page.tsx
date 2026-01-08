@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import PageGuard from '@/components/public/PageGuard';
 import type { LivePageContent } from '@/types';
 
 interface Creator {
@@ -127,6 +128,7 @@ export default function LivePage() {
   }
 
   return (
+    <PageGuard pageKey="live">
     <div>
       {/* Hero */}
       <section className="min-h-screen flex flex-col justify-center items-center text-center px-8 relative overflow-hidden">
@@ -386,5 +388,6 @@ export default function LivePage() {
         </Link>
       </section>
     </div>
+    </PageGuard>
   );
 }

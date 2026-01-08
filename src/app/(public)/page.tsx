@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import PageGuard from '@/components/public/PageGuard';
 import type { HomePageContent } from '@/types';
 
 const defaultContent: HomePageContent = {
@@ -92,6 +93,7 @@ export default function HomePage() {
   }
 
   return (
+    <PageGuard pageKey="home">
     <div>
       {/* Hero Section */}
       <section className="min-h-screen flex flex-col justify-center items-center text-center px-8 relative">
@@ -313,5 +315,6 @@ export default function HomePage() {
         )}
       </section>
     </div>
+    </PageGuard>
   );
 }

@@ -4,6 +4,7 @@ import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Mail, Phone, MapPin, Clock, Send } from 'lucide-react';
 import BookingCalendar from '@/components/public/BookingCalendar';
+import PageGuard from '@/components/public/PageGuard';
 import type { ContactPageContent } from '@/types';
 
 interface Office {
@@ -45,13 +46,15 @@ const defaultContent: ContactPageContent = {
 
 export default function ContactPage() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--text)]"></div>
-      </div>
-    }>
-      <ContactPageInner />
-    </Suspense>
+    <PageGuard pageKey="contact">
+      <Suspense fallback={
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--text)]"></div>
+        </div>
+      }>
+        <ContactPageInner />
+      </Suspense>
+    </PageGuard>
   );
 }
 

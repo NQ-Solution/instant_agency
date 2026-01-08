@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import PageGuard from '@/components/public/PageGuard';
 import type { StudioPageContent } from '@/types';
 
 const defaultContent: StudioPageContent = {
@@ -66,6 +67,7 @@ export default function StudioPage() {
   }
 
   return (
+    <PageGuard pageKey="studio">
     <div>
       {/* Hero */}
       <section className="min-h-screen flex flex-col justify-center items-center text-center px-8 relative">
@@ -149,5 +151,6 @@ export default function StudioPage() {
         </Link>
       </section>
     </div>
+    </PageGuard>
   );
 }
