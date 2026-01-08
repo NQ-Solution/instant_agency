@@ -1,9 +1,12 @@
-'use client';
-
-import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import type { Creator, LiveVideo, LivePageContent } from '@/types';
+import prisma from '@/lib/db';
+import type { LivePageContent } from '@/types';
+import type { Creator as PrismaCreator, LiveVideo as PrismaLiveVideo } from '@prisma/client';
+
+// Disable caching to always fetch fresh data
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 const defaultContent: LivePageContent = {
   hero: {
@@ -50,53 +53,56 @@ const stats = [
   { value: '200+', label: 'Brand Partners' },
 ];
 
-export default function LivePage() {
-  const [content, setContent] = useState<LivePageContent>(defaultContent);
-  const [creators, setCreators] = useState<Creator[]>([]);
-  const [liveVideos, setLiveVideos] = useState<LiveVideo[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [pageRes, creatorsRes, videosRes] = await Promise.all([
-          fetch('/api/pages/live'),
-          fetch('/api/creators'),
-          fetch('/api/live-videos'),
-        ]);
-
-        const pageData = await pageRes.json();
-        const creatorsData = await creatorsRes.json();
-        const videosData = await videosRes.json();
-
-        if (pageData.success && pageData.data?.sections?.content) {
-          setContent({ ...defaultContent, ...pageData.data.sections.content });
-        }
-
-        if (creatorsData.success) {
-          setCreators(creatorsData.data || []);
-        }
-
-        if (videosData.success) {
-          setLiveVideos(videosData.data || []);
-        }
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      } finally {
-        setLoading(false);
+async function getLiveContent(): Promise<LivePageContent> {
+  try {
+    const page = await prisma.page.findUnique({ where: { pageId: 'live' } });
+    if (page?.sections && typeof page.sections === 'object') {
+      const sections = page.sections as { content?: LivePageContent };
+      if (sections.content) {
+        return {
+          hero: { ...defaultContent.hero, ...sections.content.hero },
+          cta: { ...defaultContent.cta, ...sections.content.cta },
+        };
       }
-    };
-
-    fetchData();
-  }, []);
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--text)]"></div>
-      </div>
-    );
+    }
+  } catch (error) {
+    console.error('Error fetching live content:', error);
   }
+  return defaultContent;
+}
+
+async function getCreators(): Promise<PrismaCreator[]> {
+  try {
+    const creators = await prisma.creator.findMany({
+      where: { active: true },
+      orderBy: { order: 'asc' },
+    });
+    return creators;
+  } catch (error) {
+    console.error('Error fetching creators:', error);
+    return [];
+  }
+}
+
+async function getLiveVideos(): Promise<PrismaLiveVideo[]> {
+  try {
+    const videos = await prisma.liveVideo.findMany({
+      where: { active: true },
+      orderBy: { order: 'asc' },
+    });
+    return videos;
+  } catch (error) {
+    console.error('Error fetching live videos:', error);
+    return [];
+  }
+}
+
+export default async function LivePage() {
+  const [content, creators, liveVideos] = await Promise.all([
+    getLiveContent(),
+    getCreators(),
+    getLiveVideos(),
+  ]);
 
   return (
     <div>
@@ -183,11 +189,11 @@ export default function LivePage() {
                   </p>
                   <div className="flex gap-12">
                     <div>
-                      <p className="text-3xl text-rose-500 mb-1">{item.stats?.views || '-'}</p>
+                      <p className="text-3xl text-rose-500 mb-1">{(item.stats as { views?: string })?.views || '-'}</p>
                       <p className="text-xs tracking-wider uppercase text-muted">Views</p>
                     </div>
                     <div>
-                      <p className="text-3xl text-rose-500 mb-1">{item.stats?.conversion || '-'}</p>
+                      <p className="text-3xl text-rose-500 mb-1">{(item.stats as { conversion?: string })?.conversion || '-'}</p>
                       <p className="text-xs tracking-wider uppercase text-muted">Conversion</p>
                     </div>
                   </div>

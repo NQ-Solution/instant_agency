@@ -1,9 +1,11 @@
-'use client';
-
-import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import prisma from '@/lib/db';
 import type { AboutPageContent } from '@/types';
+
+// Disable caching to always fetch fresh data
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 const defaultContent: AboutPageContent = {
   hero: {
@@ -14,16 +16,27 @@ const defaultContent: AboutPageContent = {
   story: {
     image: '',
     title: 'Beyond the\nOrdinary',
-    paragraphs: [],
+    paragraphs: [
+      'Instant Agency는 크리에이티브의 새로운 가능성을 탐구합니다. 모델 에이전시, 스튜디오, 라이브 커머스를 아우르는 종합 크리에이티브 그룹으로서, 브랜드와 크리에이터를 연결하고 새로운 가치를 만들어갑니다.',
+      '우리는 단순한 에이전시가 아닌, 크리에이티브 파트너로서 함께합니다. 모든 프로젝트에 진정성과 열정을 담아 최고의 결과를 만들어냅니다.',
+    ],
   },
   values: {
     title: 'Our Values',
-    items: [],
+    items: [
+      { icon: '◇', title: 'Creativity', desc: '새로운 시각과 아이디어로 차별화된 크리에이티브를 제안합니다.' },
+      { icon: '◇', title: 'Excellence', desc: '모든 프로젝트에 최고의 퀄리티와 전문성을 추구합니다.' },
+      { icon: '◇', title: 'Partnership', desc: '브랜드와 크리에이터 모두의 성공을 위해 함께합니다.' },
+    ],
   },
   timeline: {
     title: 'Our Journey',
     subtitle: 'Milestones',
-    items: [],
+    items: [
+      { year: '2020', title: 'Founded', desc: 'Instant Agency 설립' },
+      { year: '2022', title: 'Studio Launch', desc: '전문 스튜디오 오픈' },
+      { year: '2024', title: 'Live Commerce', desc: '라이브 커머스 사업 시작' },
+    ],
   },
   cta: {
     title: 'Work With Us',
@@ -31,34 +44,30 @@ const defaultContent: AboutPageContent = {
   },
 };
 
-export default function AboutPage() {
-  const [content, setContent] = useState<AboutPageContent>(defaultContent);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchContent = async () => {
-      try {
-        const res = await fetch('/api/pages/about');
-        const data = await res.json();
-        if (data.success && data.data?.sections?.content) {
-          setContent({ ...defaultContent, ...data.data.sections.content });
-        }
-      } catch (error) {
-        console.error('Error fetching about content:', error);
-      } finally {
-        setLoading(false);
+async function getAboutContent(): Promise<AboutPageContent> {
+  try {
+    const page = await prisma.page.findUnique({ where: { pageId: 'about' } });
+    if (page?.sections && typeof page.sections === 'object') {
+      const sections = page.sections as { content?: AboutPageContent };
+      if (sections.content) {
+        // Deep merge to preserve default values for missing fields
+        return {
+          hero: { ...defaultContent.hero, ...sections.content.hero },
+          story: { ...defaultContent.story, ...sections.content.story },
+          values: { ...defaultContent.values, ...sections.content.values },
+          timeline: { ...defaultContent.timeline, ...sections.content.timeline },
+          cta: { ...defaultContent.cta, ...sections.content.cta },
+        };
       }
-    };
-    fetchContent();
-  }, []);
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--text)]"></div>
-      </div>
-    );
+    }
+  } catch (error) {
+    console.error('Error fetching about content:', error);
   }
+  return defaultContent;
+}
+
+export default async function AboutPage() {
+  const content = await getAboutContent();
 
   return (
     <div>
@@ -82,97 +91,91 @@ export default function AboutPage() {
       </section>
 
       {/* Story Section */}
-      {(content.story.image || content.story.paragraphs.length > 0) && (
-        <section className="py-24 px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-32 max-w-[1400px] mx-auto items-center">
-            {/* Image */}
-            <div className="relative group">
-              <div className="relative h-[50vh] lg:h-[70vh] overflow-hidden">
-                {content.story.image ? (
-                  <Image
-                    src={content.story.image}
-                    alt="Instant Agency Studio"
-                    fill
-                    className="object-cover grayscale group-hover:grayscale-0 transition-all duration-500"
-                  />
-                ) : (
-                  <div className="absolute inset-0 bg-[var(--text)]/10" />
-                )}
-              </div>
-            </div>
-
-            {/* Content */}
-            <div>
-              <h2 className="font-serif text-[clamp(2rem,4vw,3rem)] font-normal mb-8 leading-[1.3] whitespace-pre-line">
-                {content.story.title}
-              </h2>
-              <div className="space-y-6 text-muted leading-relaxed">
-                {content.story.paragraphs.map((p, i) => (
-                  <p key={i}>{p}</p>
-                ))}
-              </div>
+      <section className="py-24 px-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-32 max-w-[1400px] mx-auto items-center">
+          {/* Image */}
+          <div className="relative group">
+            <div className="relative h-[50vh] lg:h-[70vh] overflow-hidden">
+              {content.story.image ? (
+                <Image
+                  src={content.story.image}
+                  alt="Instant Agency Studio"
+                  fill
+                  className="object-cover grayscale group-hover:grayscale-0 transition-all duration-500"
+                />
+              ) : (
+                <div className="absolute inset-0 bg-[var(--text)]/10" />
+              )}
             </div>
           </div>
-        </section>
-      )}
 
-      {/* Values Section */}
-      {content.values.items.length > 0 && (
-        <section className="py-24 bg-theme-inverse text-theme-inverse">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-normal">
-              {content.values.title}
+          {/* Content */}
+          <div>
+            <h2 className="font-serif text-[clamp(2rem,4vw,3rem)] font-normal mb-8 leading-[1.3] whitespace-pre-line">
+              {content.story.title}
             </h2>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-[1200px] mx-auto px-8">
-            {content.values.items.map((value, i) => (
-              <div
-                key={i}
-                className="p-8 border border-current/10 text-center hover:border-current transition-colors"
-              >
-                <div className="text-3xl opacity-80 mb-6">{value.icon}</div>
-                <h3 className="text-xl mb-4">{value.title}</h3>
-                <p className="text-sm opacity-70 leading-relaxed">{value.desc}</p>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* Timeline Section */}
-      {content.timeline.items.length > 0 && (
-        <section className="py-24 px-8 overflow-hidden">
-          <div className="text-center mb-16">
-            <p className="text-xs tracking-widest uppercase text-muted mb-4">
-              {content.timeline.subtitle}
-            </p>
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-normal">
-              {content.timeline.title}
-            </h2>
-          </div>
-          <div className="overflow-x-auto pb-8">
-            <div className="flex gap-0 min-w-max px-8">
-              {content.timeline.items.map((item, i) => (
-                <div
-                  key={i}
-                  className="flex-shrink-0 w-[300px] px-8 text-center relative"
-                >
-                  <div className="absolute top-[60px] left-0 right-0 h-px bg-theme-20" />
-                  <div className="relative z-10 mb-12">
-                    <span className="text-3xl md:text-4xl">{item.year}</span>
-                  </div>
-                  <div className="w-3 h-3 border-2 border-theme rounded-full bg-[var(--bg)] mx-auto mb-8" />
-                  <h3 className="text-lg mb-2">{item.title}</h3>
-                  <p className="text-sm text-muted">{item.desc}</p>
-                </div>
+            <div className="space-y-6 text-muted leading-relaxed">
+              {content.story.paragraphs.map((p, i) => (
+                <p key={i}>{p}</p>
               ))}
             </div>
           </div>
-          <p className="text-center text-xs tracking-wider uppercase text-muted opacity-60">
-            ← Scroll to explore →
+        </div>
+      </section>
+
+      {/* Values Section */}
+      <section className="py-24 bg-theme-inverse text-theme-inverse">
+        <div className="text-center mb-16">
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-normal">
+            {content.values.title}
+          </h2>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-[1200px] mx-auto px-8">
+          {content.values.items.map((value, i) => (
+            <div
+              key={i}
+              className="p-8 border border-current/10 text-center hover:border-current transition-colors"
+            >
+              <div className="text-3xl opacity-80 mb-6">{value.icon}</div>
+              <h3 className="text-xl mb-4">{value.title}</h3>
+              <p className="text-sm opacity-70 leading-relaxed">{value.desc}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Timeline Section */}
+      <section className="py-24 px-8 overflow-hidden">
+        <div className="text-center mb-16">
+          <p className="text-xs tracking-widest uppercase text-muted mb-4">
+            {content.timeline.subtitle}
           </p>
-        </section>
-      )}
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-normal">
+            {content.timeline.title}
+          </h2>
+        </div>
+        <div className="overflow-x-auto pb-8">
+          <div className="flex gap-0 min-w-max px-8">
+            {content.timeline.items.map((item, i) => (
+              <div
+                key={i}
+                className="flex-shrink-0 w-[300px] px-8 text-center relative"
+              >
+                <div className="absolute top-[60px] left-0 right-0 h-px bg-theme-20" />
+                <div className="relative z-10 mb-12">
+                  <span className="text-3xl md:text-4xl">{item.year}</span>
+                </div>
+                <div className="w-3 h-3 border-2 border-theme rounded-full bg-[var(--bg)] mx-auto mb-8" />
+                <h3 className="text-lg mb-2">{item.title}</h3>
+                <p className="text-sm text-muted">{item.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+        <p className="text-center text-xs tracking-wider uppercase text-muted opacity-60">
+          ← Scroll to explore →
+        </p>
+      </section>
 
       {/* CTA Section */}
       <section className="py-24 px-8 text-center border-t border-theme-10">
