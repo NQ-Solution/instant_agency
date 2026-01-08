@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { ChevronLeft, ChevronRight, Check, X } from 'lucide-react';
+import type { BookingSettings } from '@/types';
 
 const serviceTypes = [
   { id: 'profile', name: '프로필 지원 및 접수' },
@@ -10,7 +11,14 @@ const serviceTypes = [
   { id: 'general', name: '일반 미팅' },
 ];
 
-const availableTimes = ['09:00', '10:00', '11:00', '13:00', '14:00', '15:00', '16:00', '17:00'];
+const defaultSettings: BookingSettings = {
+  availableTimes: ['09:00', '10:00', '11:00', '13:00', '14:00', '15:00', '16:00', '17:00'],
+  blockedDates: [],
+  blockedWeekdays: [],
+  minAdvanceHours: 24,
+  maxAdvanceDays: 60,
+  slotDuration: 60,
+};
 
 const months = [
   '1월', '2월', '3월', '4월', '5월', '6월',
@@ -45,6 +53,7 @@ export default function BookingCalendar() {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const [bookedSlots, setBookedSlots] = useState<BookedSlot[]>([]);
+  const [bookingSettings, setBookingSettings] = useState<BookingSettings>(defaultSettings);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [formData, setFormData] = useState<BookingFormData>({
@@ -59,7 +68,26 @@ export default function BookingCalendar() {
 
   useEffect(() => {
     fetchBookedSlots();
+    fetchBookingSettings();
   }, []);
+
+  const fetchBookingSettings = async () => {
+    try {
+      const res = await fetch('/api/booking-settings');
+      const data = await res.json();
+      if (data.success && data.data) {
+        setBookingSettings({
+          ...defaultSettings,
+          ...data.data,
+          availableTimes: data.data.availableTimes || defaultSettings.availableTimes,
+          blockedDates: data.data.blockedDates || [],
+          blockedWeekdays: data.data.blockedWeekdays || [],
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching booking settings:', error);
+    }
+  };
 
   const fetchBookedSlots = async () => {
     try {
@@ -91,19 +119,25 @@ export default function BookingCalendar() {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
+    // Calculate max booking date
+    const maxDate = new Date(today);
+    maxDate.setDate(maxDate.getDate() + bookingSettings.maxAdvanceDays);
+
     const days: Array<{
       day: number | null;
       date: Date | null;
       isPast: boolean;
       isToday: boolean;
       isWeekend: boolean;
+      isBlocked: boolean;
+      isTooFar: boolean;
       hasSlots: boolean;
       isFullyBooked: boolean;
     }> = [];
 
     // Empty cells for days before month starts
     for (let i = 0; i < firstDay; i++) {
-      days.push({ day: null, date: null, isPast: false, isToday: false, isWeekend: false, hasSlots: false, isFullyBooked: false });
+      days.push({ day: null, date: null, isPast: false, isToday: false, isWeekend: false, isBlocked: false, isTooFar: false, hasSlots: false, isFullyBooked: false });
     }
 
     // Days of the month
@@ -114,13 +148,19 @@ export default function BookingCalendar() {
       const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
       const isPast = date < today;
       const isToday = date.getTime() === today.getTime();
+      const isTooFar = date > maxDate;
+
+      // Check if date is blocked
+      const isDateBlocked = bookingSettings.blockedDates.includes(dateStr);
+      const isWeekdayBlocked = bookingSettings.blockedWeekdays.includes(dayOfWeek);
+      const isBlocked = isDateBlocked || isWeekdayBlocked;
 
       // Get booked times for this date
       const bookedTimes = bookedSlots
         .filter(slot => slot.date === dateStr)
         .map(slot => slot.time);
 
-      const availableCount = availableTimes.length - bookedTimes.length;
+      const availableCount = bookingSettings.availableTimes.length - bookedTimes.length;
 
       days.push({
         day,
@@ -128,13 +168,15 @@ export default function BookingCalendar() {
         isPast,
         isToday,
         isWeekend,
-        hasSlots: availableCount > 0,
-        isFullyBooked: availableCount === 0,
+        isBlocked,
+        isTooFar,
+        hasSlots: !isBlocked && availableCount > 0,
+        isFullyBooked: !isBlocked && availableCount === 0,
       });
     }
 
     return days;
-  }, [year, month, bookedSlots]);
+  }, [year, month, bookedSlots, bookingSettings]);
 
   const selectedDateStr = selectedDate ? formatDate(selectedDate) : null;
   const bookedTimesForSelectedDate = selectedDateStr
@@ -259,26 +301,29 @@ export default function BookingCalendar() {
         <div className="grid grid-cols-7 gap-1">
           {calendarDays.map((dayInfo, index) => {
             const isSelected = selectedDate && dayInfo.date?.getTime() === selectedDate.getTime();
+            const isDisabled = !dayInfo.day || dayInfo.isPast || dayInfo.isBlocked || dayInfo.isTooFar;
 
             return (
               <button
                 key={index}
-                disabled={!dayInfo.day || dayInfo.isPast}
+                disabled={isDisabled}
                 onClick={() => handleDateSelect(dayInfo.date)}
                 className={`
                   aspect-square flex items-center justify-center text-sm relative transition-all
                   ${!dayInfo.day ? 'cursor-default' : ''}
-                  ${dayInfo.isPast ? 'opacity-30 cursor-not-allowed' : ''}
-                  ${dayInfo.day && !dayInfo.isPast ? 'border border-[var(--text)]/10 hover:border-[var(--text)]' : ''}
-                  ${dayInfo.isToday ? 'border-[var(--text)]' : ''}
+                  ${dayInfo.isPast || dayInfo.isTooFar ? 'opacity-30 cursor-not-allowed' : ''}
+                  ${dayInfo.isBlocked && !dayInfo.isPast ? 'opacity-40 cursor-not-allowed bg-red-500/10' : ''}
+                  ${dayInfo.day && !isDisabled ? 'border border-[var(--text)]/10 hover:border-[var(--text)]' : ''}
+                  ${dayInfo.day && isDisabled && !dayInfo.isPast && !dayInfo.isTooFar ? 'border border-red-500/30' : ''}
+                  ${dayInfo.isToday && !isDisabled ? 'border-[var(--text)]' : ''}
                   ${isSelected ? 'bg-theme-inverse text-theme-inverse border-theme' : ''}
                 `}
               >
                 {dayInfo.day}
-                {dayInfo.day && !dayInfo.isPast && (
+                {dayInfo.day && !dayInfo.isPast && !dayInfo.isTooFar && (
                   <span
                     className={`absolute bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full ${
-                      dayInfo.isFullyBooked ? 'bg-red-500' : dayInfo.hasSlots ? 'bg-green-500' : ''
+                      dayInfo.isBlocked ? 'bg-gray-400' : dayInfo.isFullyBooked ? 'bg-red-500' : dayInfo.hasSlots ? 'bg-green-500' : ''
                     }`}
                   />
                 )}
@@ -302,7 +347,7 @@ export default function BookingCalendar() {
 
           {selectedDate ? (
             <div className="grid grid-cols-4 gap-2">
-              {availableTimes.map((time) => {
+              {bookingSettings.availableTimes.map((time) => {
                 const booked = isTimeBooked(time);
                 const isSelected = selectedTime === time;
 
@@ -340,7 +385,7 @@ export default function BookingCalendar() {
           )}
 
           {/* Legend */}
-          <div className="flex gap-6 mt-4">
+          <div className="flex flex-wrap gap-4 mt-4">
             <div className="flex items-center gap-2 text-xs text-[var(--text-muted)]">
               <span className="w-2 h-2 rounded-full bg-green-500" />
               <span>예약 가능</span>
@@ -348,6 +393,10 @@ export default function BookingCalendar() {
             <div className="flex items-center gap-2 text-xs text-[var(--text-muted)]">
               <span className="w-2 h-2 rounded-full bg-red-500" />
               <span>예약 완료</span>
+            </div>
+            <div className="flex items-center gap-2 text-xs text-[var(--text-muted)]">
+              <span className="w-2 h-2 rounded-full bg-gray-400" />
+              <span>예약 불가</span>
             </div>
           </div>
         </div>

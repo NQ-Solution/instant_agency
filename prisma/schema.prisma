@@ -69,6 +69,19 @@ model Booking {
   @@index([date, status])
 }
 
+// BookingSettings (예약 설정)
+model BookingSettings {
+  id              String   @id @default(cuid())
+  availableTimes  String[] @default(["09:00", "10:00", "11:00", "13:00", "14:00", "15:00", "16:00", "17:00"])
+  blockedDates    String[] @default([])
+  blockedWeekdays Int[]    @default([])
+  minAdvanceHours Int      @default(24)
+  maxAdvanceDays  Int      @default(60)
+  slotDuration    Int      @default(60)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
 // Page (페이지 콘텐츠)
 model Page {
   id        String   @id @default(cuid())

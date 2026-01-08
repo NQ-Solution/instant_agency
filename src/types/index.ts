@@ -90,6 +90,19 @@ export interface PageVisibility {
   contact?: boolean;
 }
 
+// Booking Settings types
+export interface BookingSettings {
+  id?: string;
+  availableTimes: string[];           // ['09:00', '10:00', ...]
+  blockedDates: string[];             // ['2025-01-15', '2025-01-20', ...]
+  blockedWeekdays: number[];          // [0, 6] for Sunday and Saturday
+  minAdvanceHours: number;            // Minimum hours in advance for booking
+  maxAdvanceDays: number;             // Maximum days in advance for booking
+  slotDuration: number;               // Duration in minutes (default 60)
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
 export interface Settings {
   id: string;
   site: {
