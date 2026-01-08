@@ -21,7 +21,7 @@ export default function EditLiveVideoPage({ params }: { params: Promise<{ id: st
     label: '',
     infoTitle: '',
     desc: '',
-    stats: { views: '0', conversion: '0%' },
+    stats: { views: '', conversion: '' },
     order: 0,
     active: true,
   });
@@ -158,33 +158,6 @@ export default function EditLiveVideoPage({ params }: { params: Promise<{ id: st
             onChange={(e) => setFormData({ ...formData, creator: e.target.value })}
             placeholder="e.g., Yuna Kim"
             className="w-full px-4 py-3 bg-transparent border border-[var(--text)]/20 rounded-lg focus:outline-none focus:border-[var(--text)]"
-            required
-          />
-        </div>
-
-        <div>
-          <label className="block text-xs tracking-wider uppercase text-[var(--text-muted)] mb-2">
-            Info Title *
-          </label>
-          <textarea
-            value={formData.infoTitle}
-            onChange={(e) => setFormData({ ...formData, infoTitle: e.target.value })}
-            placeholder="Use \n for line breaks"
-            rows={2}
-            className="w-full px-4 py-3 bg-transparent border border-[var(--text)]/20 rounded-lg focus:outline-none focus:border-[var(--text)] resize-none"
-            required
-          />
-        </div>
-
-        <div>
-          <label className="block text-xs tracking-wider uppercase text-[var(--text-muted)] mb-2">
-            Description *
-          </label>
-          <textarea
-            value={formData.desc}
-            onChange={(e) => setFormData({ ...formData, desc: e.target.value })}
-            rows={3}
-            className="w-full px-4 py-3 bg-transparent border border-[var(--text)]/20 rounded-lg focus:outline-none focus:border-[var(--text)] resize-none"
             required
           />
         </div>
