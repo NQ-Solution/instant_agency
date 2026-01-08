@@ -70,6 +70,7 @@ function ContactPageInner() {
     company: '',
     subject: '',
     message: '',
+    privacyConsent: false,
   });
   const [loading, setLoading] = useState(false);
   const [pageLoading, setPageLoading] = useState(true);
@@ -130,6 +131,7 @@ function ContactPageInner() {
           company: '',
           subject: '',
           message: '',
+          privacyConsent: false,
         });
         setTimeout(() => setSuccess(false), 5000);
       } else {
@@ -320,9 +322,24 @@ function ContactPageInner() {
                       required
                     />
                   </div>
+                  {/* Privacy Consent */}
+                  <div>
+                    <label className="flex items-start gap-3 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={formData.privacyConsent}
+                        onChange={(e) => setFormData({ ...formData, privacyConsent: e.target.checked })}
+                        className="w-4 h-4 mt-0.5"
+                        required
+                      />
+                      <span className="text-xs text-muted leading-relaxed">
+                        개인정보 수집 및 이용에 동의합니다. 수집항목: 이름, 연락처, 이메일, 회사명 / 수집목적: 문의 응대 및 상담 / 보유기간: 문의 완료 후 1년
+                      </span>
+                    </label>
+                  </div>
                   <button
                     type="submit"
-                    disabled={loading}
+                    disabled={loading || !formData.privacyConsent}
                     className="flex items-center gap-2 px-8 py-4 bg-theme-inverse text-theme-inverse text-sm tracking-wider uppercase hover:opacity-80 transition-opacity disabled:opacity-50"
                   >
                     {loading ? (

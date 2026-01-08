@@ -4,8 +4,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { ChevronLeft, ChevronRight, Check, X } from 'lucide-react';
 
 const serviceTypes = [
-  { id: 'profile', name: '프로필 접수 상담' },
-  { id: 'studio', name: '스튜디오 상담' },
+  { id: 'profile', name: '프로필 지원 및 접수' },
   { id: 'model', name: '모델 캐스팅' },
   { id: 'live', name: '라이브 커머스 기획' },
   { id: 'general', name: '일반 미팅' },
@@ -32,6 +31,9 @@ interface BookingFormData {
   name: string;
   email: string;
   phone: string;
+  instagram: string;
+  tiktok: string;
+  privacyConsent: boolean;
 }
 
 function formatDate(date: Date): string {
@@ -50,6 +52,9 @@ export default function BookingCalendar() {
     name: '',
     email: '',
     phone: '',
+    instagram: '',
+    tiktok: '',
+    privacyConsent: false,
   });
 
   useEffect(() => {
@@ -182,6 +187,8 @@ export default function BookingCalendar() {
             name: formData.name,
             email: formData.email,
             phone: formData.phone,
+            instagram: formData.instagram || undefined,
+            tiktok: formData.tiktok || undefined,
           },
         }),
       });
@@ -201,7 +208,7 @@ export default function BookingCalendar() {
           setSuccess(false);
           setSelectedDate(null);
           setSelectedTime(null);
-          setFormData({ service: '', name: '', email: '', phone: '' });
+          setFormData({ service: '', name: '', email: '', phone: '', instagram: '', tiktok: '', privacyConsent: false });
         }, 3000);
       } else {
         alert(data.error || 'Failed to create booking');
@@ -214,7 +221,7 @@ export default function BookingCalendar() {
     }
   };
 
-  const canSubmit = selectedDate && selectedTime && formData.service && formData.name && formData.email && formData.phone;
+  const canSubmit = selectedDate && selectedTime && formData.service && formData.name && formData.email && formData.phone && formData.privacyConsent;
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -438,6 +445,48 @@ export default function BookingCalendar() {
                   className="w-full px-4 py-3 bg-transparent border border-[var(--text)]/20 focus:border-[var(--text)] focus:outline-none"
                   required
                 />
+              </div>
+
+              <div>
+                <label className="block text-xs tracking-wider text-[var(--text-muted)] mb-2">
+                  인스타그램
+                </label>
+                <input
+                  type="text"
+                  value={formData.instagram}
+                  onChange={(e) => setFormData({ ...formData, instagram: e.target.value })}
+                  placeholder="@username"
+                  className="w-full px-4 py-3 bg-transparent border border-[var(--text)]/20 focus:border-[var(--text)] focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs tracking-wider text-[var(--text-muted)] mb-2">
+                  틱톡
+                </label>
+                <input
+                  type="text"
+                  value={formData.tiktok}
+                  onChange={(e) => setFormData({ ...formData, tiktok: e.target.value })}
+                  placeholder="@username"
+                  className="w-full px-4 py-3 bg-transparent border border-[var(--text)]/20 focus:border-[var(--text)] focus:outline-none"
+                />
+              </div>
+
+              {/* Privacy Consent */}
+              <div className="pt-2">
+                <label className="flex items-start gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={formData.privacyConsent}
+                    onChange={(e) => setFormData({ ...formData, privacyConsent: e.target.checked })}
+                    className="w-4 h-4 mt-0.5 accent-rose-500"
+                    required
+                  />
+                  <span className="text-xs text-[var(--text-muted)] leading-relaxed">
+                    개인정보 수집 및 이용에 동의합니다. 수집항목: 이름, 연락처, 이메일, SNS 계정 / 수집목적: 상담 및 예약 진행 / 보유기간: 상담 완료 후 1년
+                  </span>
+                </label>
               </div>
 
               <button
