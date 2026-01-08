@@ -21,6 +21,7 @@ interface BookedSlot {
   date: string;
   time: string;
   customerName?: string;
+  status?: string;
 }
 
 interface BookingFormData {
@@ -57,11 +58,15 @@ export default function BookingCalendar() {
       const res = await fetch('/api/bookings');
       const data = await res.json();
       if (data.success) {
-        const slots = data.data.map((b: { date: string; time: string; customer: { name: string } }) => ({
-          date: new Date(b.date).toISOString().split('T')[0],
-          time: b.time,
-          customerName: b.customer?.name,
-        }));
+        // Filter out cancelled bookings and map to slots
+        const slots = data.data
+          .filter((b: { status: string }) => b.status !== 'cancelled')
+          .map((b: { date: string; time: string; customer: { name: string }; status: string }) => ({
+            date: new Date(b.date).toISOString().split('T')[0],
+            time: b.time,
+            customerName: b.customer?.name,
+            status: b.status,
+          }));
         setBookedSlots(slots);
       }
     } catch (error) {
@@ -150,6 +155,11 @@ export default function BookingCalendar() {
     return bookedTimesForSelectedDate.some(slot => slot.time === time);
   };
 
+  const getBookerName = (time: string) => {
+    const slot = bookedTimesForSelectedDate.find(s => s.time === time);
+    return slot?.customerName || '예약됨';
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedDate || !selectedTime || !formData.service) return;
@@ -177,7 +187,12 @@ export default function BookingCalendar() {
 
       if (data.success) {
         setSuccess(true);
-        setBookedSlots([...bookedSlots, { date: formatDate(selectedDate), time: selectedTime }]);
+        setBookedSlots([...bookedSlots, {
+          date: formatDate(selectedDate),
+          time: selectedTime,
+          customerName: formData.name,
+          status: 'pending'
+        }]);
 
         setTimeout(() => {
           setSuccess(false);
@@ -295,12 +310,12 @@ export default function BookingCalendar() {
                     `}
                   >
                     {booked ? (
-                      <>
-                        <span className="opacity-30">{time}</span>
-                        <span className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[10px] text-red-500 uppercase tracking-wider">
-                          Booked
+                      <div className="flex flex-col items-center justify-center h-full">
+                        <span className="text-[10px] text-muted line-through">{time}</span>
+                        <span className="text-[10px] text-red-400 font-medium truncate max-w-full px-1">
+                          {getBookerName(time)}
                         </span>
-                      </>
+                      </div>
                     ) : (
                       time
                     )}

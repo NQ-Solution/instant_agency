@@ -12,6 +12,11 @@ const footerLinks = [
   { href: '/contact', label: 'Contact' },
 ];
 
+const legalLinks = [
+  { href: '/privacy', label: '개인정보 처리방침' },
+  { href: '/terms', label: '이용약관' },
+];
+
 export default function Footer() {
   const [settings, setSettings] = useState<Settings | null>(null);
 
@@ -55,6 +60,21 @@ export default function Footer() {
             <p className="text-xs tracking-widest uppercase text-muted mb-4">Navigation</p>
             <ul className="space-y-2">
               {footerLinks.map((link) => (
+                <li key={link.href}>
+                  <Link
+                    href={link.href}
+                    className="text-sm text-muted hover:text-theme transition-colors"
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+
+            {/* Legal Links */}
+            <p className="text-xs tracking-widest uppercase text-muted mb-4 mt-8">Legal</p>
+            <ul className="space-y-2">
+              {legalLinks.map((link) => (
                 <li key={link.href}>
                   <Link
                     href={link.href}
