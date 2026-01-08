@@ -48,11 +48,14 @@ export async function POST(request: NextRequest) {
   try {
     const data = await request.json();
 
+    // Generate slug from name if not provided
+    const slug = data.slug || data.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+
     const model = await prisma.model.create({
       data: {
         name: data.name,
         nameKr: data.nameKr,
-        slug: data.slug,
+        slug,
         category: data.category,
         featured: data.featured ?? false,
         profileImage: data.profileImage,
