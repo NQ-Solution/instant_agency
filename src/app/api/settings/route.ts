@@ -35,6 +35,7 @@ export async function PUT(request: NextRequest) {
         data: {
           site: data.site,
           contact: data.contact,
+          business: data.business,
           offices: data.offices,
           social: data.social,
           partners: data.partners,
@@ -45,6 +46,7 @@ export async function PUT(request: NextRequest) {
         data: {
           site: data.site ?? {},
           contact: data.contact ?? {},
+          business: data.business ?? {},
           offices: data.offices ?? [],
           social: data.social ?? {},
           partners: data.partners ?? [],

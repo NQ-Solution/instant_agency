@@ -83,6 +83,7 @@ model Settings {
   id        String   @id @default(cuid())
   site      Json     @default("{}") // { name, logo, tagline }
   contact   Json     @default("{}") // { email, phone, businessHours }
+  business  Json     @default("{}") // { businessNumber, businessName, representative, businessAddress, ecommerceNumber, hostingProvider }
   offices   Json     @default("[]") // [{ city, address }]
   social    Json     @default("{}") // { instagram, linkedin, twitter, youtube }
   partners  String[] @default([])

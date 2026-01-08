@@ -40,10 +40,24 @@ export default function FloatingContactCard() {
       >
         <div className="p-4 border-b border-theme-10">
           <h3 className="font-serif text-lg">Get in Touch</h3>
-          <p className="text-xs text-muted mt-1">무엇을 도와드릴까요?</p>
+          <p className="text-xs text-muted mt-1">How can we help you?</p>
         </div>
 
         <div className="p-2">
+          <button
+            onClick={() => handleSelect('booking')}
+            className="w-full flex items-center gap-4 p-4 hover:bg-theme-5 rounded-lg transition-colors group text-left"
+          >
+            <div className="w-10 h-10 rounded-full bg-theme-10 flex items-center justify-center group-hover:bg-theme-20 transition-colors">
+              <Calendar size={20} />
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-medium">Profile Submission</p>
+              <p className="text-xs text-muted">Schedule a meeting</p>
+            </div>
+            <ChevronRight size={16} className="text-muted group-hover:translate-x-1 transition-transform" />
+          </button>
+
           <button
             onClick={() => handleSelect('inquiry')}
             className="w-full flex items-center gap-4 p-4 hover:bg-theme-5 rounded-lg transition-colors group text-left"
@@ -53,21 +67,7 @@ export default function FloatingContactCard() {
             </div>
             <div className="flex-1">
               <p className="text-sm font-medium">Inquiry</p>
-              <p className="text-xs text-muted">문의사항 보내기</p>
-            </div>
-            <ChevronRight size={16} className="text-muted group-hover:translate-x-1 transition-transform" />
-          </button>
-
-          <button
-            onClick={() => handleSelect('booking')}
-            className="w-full flex items-center gap-4 p-4 hover:bg-theme-5 rounded-lg transition-colors group text-left"
-          >
-            <div className="w-10 h-10 rounded-full bg-theme-10 flex items-center justify-center group-hover:bg-theme-20 transition-colors">
-              <Calendar size={20} />
-            </div>
-            <div className="flex-1">
-              <p className="text-sm font-medium">Book a Meeting</p>
-              <p className="text-xs text-muted">미팅 예약하기</p>
+              <p className="text-xs text-muted">Send us a message</p>
             </div>
             <ChevronRight size={16} className="text-muted group-hover:translate-x-1 transition-transform" />
           </button>
