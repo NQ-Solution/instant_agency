@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Save } from 'lucide-react';
 import Link from 'next/link';
+import VideoUpload from '@/components/admin/VideoUpload';
 
 export default function NewLiveVideoPage() {
   const router = useRouter();
@@ -60,6 +61,19 @@ export default function NewLiveVideoPage() {
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Video Upload */}
+        <div>
+          <label className="block text-xs tracking-wider uppercase text-[var(--text-muted)] mb-2">
+            Video *
+          </label>
+          <VideoUpload
+            value={formData.videoUrl}
+            onChange={(url) => setFormData({ ...formData, videoUrl: url })}
+            folder="live-videos"
+            placeholder="동영상 파일을 업로드하세요"
+          />
+        </div>
+
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="block text-xs tracking-wider uppercase text-[var(--text-muted)] mb-2">
@@ -115,23 +129,6 @@ export default function NewLiveVideoPage() {
             className="w-full px-4 py-3 bg-transparent border border-[var(--text)]/20 rounded-lg focus:outline-none focus:border-[var(--text)]"
             required
           />
-        </div>
-
-        <div>
-          <label className="block text-xs tracking-wider uppercase text-[var(--text-muted)] mb-2">
-            Video URL *
-          </label>
-          <input
-            type="url"
-            value={formData.videoUrl}
-            onChange={(e) => setFormData({ ...formData, videoUrl: e.target.value })}
-            placeholder="https://example.com/video.mp4"
-            className="w-full px-4 py-3 bg-transparent border border-[var(--text)]/20 rounded-lg focus:outline-none focus:border-[var(--text)]"
-            required
-          />
-          <p className="text-xs text-[var(--text-muted)] mt-1">
-            Direct video link (MP4) or TikTok/Instagram video URL
-          </p>
         </div>
 
         <div>
