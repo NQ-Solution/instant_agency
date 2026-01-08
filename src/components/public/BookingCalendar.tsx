@@ -4,18 +4,21 @@ import { useState, useEffect, useMemo } from 'react';
 import { ChevronLeft, ChevronRight, Check, X } from 'lucide-react';
 
 const serviceTypes = [
-  { id: 'studio', name: 'Studio Consultation', nameKr: '스튜디오 상담' },
-  { id: 'model', name: 'Model Casting', nameKr: '모델 캐스팅' },
-  { id: 'live', name: 'Live Commerce Planning', nameKr: '라이브 커머스 기획' },
-  { id: 'general', name: 'General Meeting', nameKr: '일반 미팅' },
+  { id: 'profile', name: '프로필 접수 상담' },
+  { id: 'studio', name: '스튜디오 상담' },
+  { id: 'model', name: '모델 캐스팅' },
+  { id: 'live', name: '라이브 커머스 기획' },
+  { id: 'general', name: '일반 미팅' },
 ];
 
 const availableTimes = ['09:00', '10:00', '11:00', '13:00', '14:00', '15:00', '16:00', '17:00'];
 
 const months = [
-  'January', 'February', 'March', 'April', 'May', 'June',
-  'July', 'August', 'September', 'October', 'November', 'December'
+  '1월', '2월', '3월', '4월', '5월', '6월',
+  '7월', '8월', '9월', '10월', '11월', '12월'
 ];
+
+const weekdays = ['일', '월', '화', '수', '목', '금', '토'];
 
 interface BookedSlot {
   date: string;
@@ -219,7 +222,7 @@ export default function BookingCalendar() {
       <div className="lg:col-span-2 border border-[var(--text)]/10 p-6 bg-[var(--bg)]/90 backdrop-blur-sm">
         {/* Calendar Header */}
         <div className="flex items-center justify-between mb-6 pb-4 border-b border-[var(--text)]/10">
-          <h2 className="font-serif text-2xl">{months[month]} {year}</h2>
+          <h2 className="font-serif text-2xl">{year}년 {months[month]}</h2>
           <div className="flex gap-2">
             <button
               onClick={handlePrevMonth}
@@ -238,8 +241,8 @@ export default function BookingCalendar() {
 
         {/* Weekdays */}
         <div className="grid grid-cols-7 gap-1 mb-1">
-          {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
-            <div key={day} className="text-center text-xs tracking-wider uppercase text-[var(--text-muted)] py-2">
+          {weekdays.map((day) => (
+            <div key={day} className="text-center text-xs tracking-wider text-[var(--text-muted)] py-2">
               {day}
             </div>
           ))}
@@ -280,13 +283,13 @@ export default function BookingCalendar() {
         {/* Time Slots */}
         <div className="mt-6 pt-6 border-t border-[var(--text)]/10">
           <div className="flex items-center justify-between mb-4">
-            <span className="text-xs tracking-wider uppercase text-[var(--text-muted)]">
-              Available Times
+            <span className="text-xs tracking-wider text-[var(--text-muted)]">
+              예약 가능 시간
             </span>
             <span className="font-serif">
               {selectedDate
-                ? selectedDate.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
-                : 'Select a date'}
+                ? selectedDate.toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' })
+                : '날짜를 선택해주세요'}
             </span>
           </div>
 
@@ -325,7 +328,7 @@ export default function BookingCalendar() {
             </div>
           ) : (
             <div className="text-center py-8 text-[var(--text-muted)]">
-              Please select a date to see available times
+              날짜를 선택하시면 예약 가능한 시간이 표시됩니다
             </div>
           )}
 
@@ -333,11 +336,11 @@ export default function BookingCalendar() {
           <div className="flex gap-6 mt-4">
             <div className="flex items-center gap-2 text-xs text-[var(--text-muted)]">
               <span className="w-2 h-2 rounded-full bg-green-500" />
-              <span>Available</span>
+              <span>예약 가능</span>
             </div>
             <div className="flex items-center gap-2 text-xs text-[var(--text-muted)]">
               <span className="w-2 h-2 rounded-full bg-red-500" />
-              <span>Booked</span>
+              <span>예약 완료</span>
             </div>
           </div>
         </div>
@@ -346,7 +349,7 @@ export default function BookingCalendar() {
       {/* Booking Form Section */}
       <div className="border border-[var(--text)]/10 p-6 bg-[var(--bg)]/90 backdrop-blur-sm">
         <h2 className="font-serif text-xl mb-6 pb-4 border-b border-[var(--text)]/10">
-          Booking Details
+          예약 정보
         </h2>
 
         {success ? (
@@ -364,24 +367,24 @@ export default function BookingCalendar() {
             {/* Summary */}
             <div className="mb-6 space-y-3">
               <div className="flex justify-between py-2 border-b border-[var(--text)]/5 text-sm">
-                <span className="text-[var(--text-muted)]">Date</span>
-                <span>{selectedDate ? selectedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '-'}</span>
+                <span className="text-[var(--text-muted)]">날짜</span>
+                <span>{selectedDate ? selectedDate.toLocaleDateString('ko-KR', { month: 'short', day: 'numeric', year: 'numeric' }) : '-'}</span>
               </div>
               <div className="flex justify-between py-2 border-b border-[var(--text)]/5 text-sm">
-                <span className="text-[var(--text-muted)]">Time</span>
+                <span className="text-[var(--text-muted)]">시간</span>
                 <span>{selectedTime || '-'}</span>
               </div>
               <div className="flex justify-between py-2 border-b border-[var(--text)]/5 text-sm">
-                <span className="text-[var(--text-muted)]">Duration</span>
-                <span>1 Hour</span>
+                <span className="text-[var(--text-muted)]">소요시간</span>
+                <span>1시간</span>
               </div>
             </div>
 
             {/* Form */}
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-xs tracking-wider uppercase text-[var(--text-muted)] mb-2">
-                  Service Type *
+                <label className="block text-xs tracking-wider text-[var(--text-muted)] mb-2">
+                  상담 유형 *
                 </label>
                 <select
                   value={formData.service}
@@ -389,7 +392,7 @@ export default function BookingCalendar() {
                   className="w-full px-4 py-3 bg-transparent border border-[var(--text)]/20 focus:border-[var(--text)] focus:outline-none"
                   required
                 >
-                  <option value="">Select a service</option>
+                  <option value="">상담 유형을 선택해주세요</option>
                   {serviceTypes.map((service) => (
                     <option key={service.id} value={service.id}>
                       {service.name}
@@ -399,8 +402,8 @@ export default function BookingCalendar() {
               </div>
 
               <div>
-                <label className="block text-xs tracking-wider uppercase text-[var(--text-muted)] mb-2">
-                  Your Name *
+                <label className="block text-xs tracking-wider text-[var(--text-muted)] mb-2">
+                  이름 *
                 </label>
                 <input
                   type="text"
@@ -412,8 +415,8 @@ export default function BookingCalendar() {
               </div>
 
               <div>
-                <label className="block text-xs tracking-wider uppercase text-[var(--text-muted)] mb-2">
-                  Email *
+                <label className="block text-xs tracking-wider text-[var(--text-muted)] mb-2">
+                  이메일 *
                 </label>
                 <input
                   type="email"
@@ -425,8 +428,8 @@ export default function BookingCalendar() {
               </div>
 
               <div>
-                <label className="block text-xs tracking-wider uppercase text-[var(--text-muted)] mb-2">
-                  Phone *
+                <label className="block text-xs tracking-wider text-[var(--text-muted)] mb-2">
+                  연락처 *
                 </label>
                 <input
                   type="tel"
@@ -440,9 +443,9 @@ export default function BookingCalendar() {
               <button
                 type="submit"
                 disabled={!canSubmit || loading}
-                className="w-full py-4 bg-theme-inverse text-theme-inverse text-xs tracking-wider uppercase hover:opacity-90 disabled:opacity-30 disabled:cursor-not-allowed transition-opacity"
+                className="w-full py-4 bg-theme-inverse text-theme-inverse text-xs tracking-wider hover:opacity-90 disabled:opacity-30 disabled:cursor-not-allowed transition-opacity"
               >
-                {loading ? 'Processing...' : 'Confirm Booking'}
+                {loading ? '처리 중...' : '예약 확정'}
               </button>
             </form>
           </>

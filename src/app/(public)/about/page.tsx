@@ -157,7 +157,8 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* Timeline Section */}
+      {/* Timeline Section - Hidden for now, activate later */}
+      {/*
       <section className="py-24 px-8 overflow-hidden">
         <div className="text-center mb-16">
           <p className="text-xs tracking-widest uppercase text-muted mb-4">
@@ -189,6 +190,7 @@ export default function AboutPage() {
           ← Scroll to explore →
         </p>
       </section>
+      */}
 
       {/* CTA Section */}
       <section className="py-24 px-8 text-center border-t border-theme-10">

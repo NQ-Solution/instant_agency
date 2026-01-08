@@ -25,9 +25,9 @@ interface Settings {
 
 const defaultContent: ContactPageContent = {
   hero: {
-    label: 'Get in Touch',
+    label: 'Instant Studio',
     title: 'Contact',
-    subtitle: '문의사항이 있거나 미팅 예약이 필요하시면 아래에서 선택해주세요.',
+    subtitle: 'Get in touch with us for inquiries or schedule a profile submission meeting.',
   },
   info: {
     email: '',
@@ -35,7 +35,7 @@ const defaultContent: ContactPageContent = {
   },
   offices: [],
   map: {
-    title: 'Location',
+    title: '오시는 길',
     subtitle: '오피스 위치를 확인하세요',
     embedUrl: '',
     address: '',
@@ -61,7 +61,7 @@ function ContactPageInner() {
 
   const [content, setContent] = useState<ContactPageContent>(defaultContent);
   const [activeTab, setActiveTab] = useState<'inquiry' | 'booking'>(
-    tabParam === 'booking' ? 'booking' : 'inquiry'
+    tabParam === 'inquiry' ? 'inquiry' : 'booking'
   );
   const [formData, setFormData] = useState({
     name: '',
@@ -182,6 +182,19 @@ function ContactPageInner() {
         <p className="text-xs tracking-[0.3em] uppercase text-muted mb-8 text-center">01</p>
         <div className="flex justify-center gap-12 border-b border-theme-10 max-w-md mx-auto">
           <button
+            onClick={() => setActiveTab('booking')}
+            className={`relative pb-4 text-xs tracking-[0.2em] uppercase transition-colors duration-300 ${
+              activeTab === 'booking'
+                ? 'text-theme'
+                : 'text-muted hover:text-theme'
+            }`}
+          >
+            Profile Submission
+            <span className={`absolute bottom-0 left-0 h-px bg-theme transition-all duration-300 ${
+              activeTab === 'booking' ? 'w-full' : 'w-0'
+            }`} />
+          </button>
+          <button
             onClick={() => setActiveTab('inquiry')}
             className={`relative pb-4 text-xs tracking-[0.2em] uppercase transition-colors duration-300 ${
               activeTab === 'inquiry'
@@ -194,26 +207,21 @@ function ContactPageInner() {
               activeTab === 'inquiry' ? 'w-full' : 'w-0'
             }`} />
           </button>
-          <button
-            onClick={() => setActiveTab('booking')}
-            className={`relative pb-4 text-xs tracking-[0.2em] uppercase transition-colors duration-300 ${
-              activeTab === 'booking'
-                ? 'text-theme'
-                : 'text-muted hover:text-theme'
-            }`}
-          >
-            Book a Meeting
-            <span className={`absolute bottom-0 left-0 h-px bg-theme transition-all duration-300 ${
-              activeTab === 'booking' ? 'w-full' : 'w-0'
-            }`} />
-          </button>
         </div>
       </section>
 
       {/* Content */}
       <section className="px-8 pb-24">
         <div className="max-w-6xl mx-auto">
-          {activeTab === 'inquiry' ? (
+          {activeTab === 'booking' ? (
+            <div>
+              <h2 className="text-2xl mb-4 text-center">Profile Submission Meeting</h2>
+              <p className="text-muted text-center mb-8">
+                Schedule a meeting for profile submission and consultation.
+              </p>
+              <BookingCalendar />
+            </div>
+          ) : (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
               {/* Contact Form */}
               <div className="p-8 border border-theme-10 bg-[var(--bg)]/80 backdrop-blur-sm">
@@ -221,7 +229,7 @@ function ContactPageInner() {
 
                 {success && (
                   <div className="bg-green-500/10 border border-green-500/30 text-green-500 p-4 rounded-lg mb-6">
-                    메시지가 성공적으로 전송되었습니다. 곧 연락드리겠습니다.
+                    Your message has been sent successfully. We will contact you soon.
                   </div>
                 )}
 
@@ -294,7 +302,7 @@ function ContactPageInner() {
                     >
                       <option value="">Select a subject</option>
                       <option value="studio">Studio Inquiry</option>
-                      <option value="model">Model Booking</option>
+                      <option value="model">Model Casting</option>
                       <option value="live">Live Commerce</option>
                       <option value="partnership">Partnership</option>
                       <option value="other">Other</option>
@@ -417,19 +425,11 @@ function ContactPageInner() {
                 {/* Show placeholder when no settings */}
                 {!displayEmail && !settings?.contact?.phone && displayOffices.length === 0 && (
                   <div className="text-center py-8 text-muted">
-                    <p>연락처 정보가 아직 설정되지 않았습니다.</p>
-                    <p className="text-sm mt-2">관리자 페이지에서 설정해주세요.</p>
+                    <p>Contact information has not been set up yet.</p>
+                    <p className="text-sm mt-2">Please configure it in the admin settings.</p>
                   </div>
                 )}
               </div>
-            </div>
-          ) : (
-            <div>
-              <h2 className="text-2xl mb-4 text-center">Book a Meeting</h2>
-              <p className="text-muted text-center mb-8">
-                문의사항이 있거나 미팅 예약이 필요하시면 아래에서 날짜와 시간을 선택해주세요.
-              </p>
-              <BookingCalendar />
             </div>
           )}
         </div>
@@ -469,7 +469,7 @@ function ContactPageInner() {
                 href={content.map.directionsUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-6 py-3 border border-theme text-xs tracking-[0.1em] uppercase hover:bg-theme-inverse hover:text-theme-inverse transition-all duration-300"
+                className="inline-flex items-center gap-2 px-6 py-3 border border-theme text-xs tracking-[0.1em] hover:bg-theme-inverse hover:text-theme-inverse transition-all duration-300"
               >
                 Get Directions →
               </a>
