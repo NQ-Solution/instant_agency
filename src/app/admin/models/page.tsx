@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Plus, Search, Edit, Trash2, Eye, EyeOff, Star } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, Eye, EyeOff, Star, GripVertical, ChevronUp, ChevronDown } from 'lucide-react';
 import type { Model } from '@/types';
 
 export default function ModelsPage() {
@@ -80,6 +80,41 @@ export default function ModelsPage() {
       }
     } catch (error) {
       console.error('Error updating model:', error);
+    }
+  };
+
+  const moveModel = async (model: Model, direction: 'up' | 'down') => {
+    const currentIndex = models.findIndex((m) => m.id === model.id);
+    if (
+      (direction === 'up' && currentIndex === 0) ||
+      (direction === 'down' && currentIndex === models.length - 1)
+    ) {
+      return;
+    }
+
+    const newIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
+    const newModels = [...models];
+    const [removed] = newModels.splice(currentIndex, 1);
+    newModels.splice(newIndex, 0, removed);
+
+    // Update local state immediately
+    setModels(newModels);
+
+    // Update order in database
+    try {
+      const updates = newModels.map((m, index) => ({
+        id: m.id,
+        order: index,
+      }));
+
+      await fetch('/api/models/reorder', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ models: updates }),
+      });
+    } catch (error) {
+      console.error('Error updating order:', error);
+      fetchModels(); // Revert on error
     }
   };
 
@@ -171,6 +206,23 @@ export default function ModelsPage() {
                   <Star className="text-yellow-500 fill-yellow-500" size={20} />
                 </div>
               )}
+              {/* Order Controls */}
+              <div className="absolute top-2 left-2 flex flex-col gap-1">
+                <button
+                  onClick={() => moveModel(model, 'up')}
+                  className="w-7 h-7 bg-black/50 text-white rounded flex items-center justify-center hover:bg-black/70 transition-colors"
+                  title="Move up"
+                >
+                  <ChevronUp size={16} />
+                </button>
+                <button
+                  onClick={() => moveModel(model, 'down')}
+                  className="w-7 h-7 bg-black/50 text-white rounded flex items-center justify-center hover:bg-black/70 transition-colors"
+                  title="Move down"
+                >
+                  <ChevronDown size={16} />
+                </button>
+              </div>
             </div>
             <div className="p-4">
               <h3 className="font-serif text-lg mb-1">{model.name}</h3>

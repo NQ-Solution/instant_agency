@@ -3,6 +3,10 @@ import Image from 'next/image';
 import prisma from '@/lib/db';
 import type { HomePageContent } from '@/types';
 
+// Disable caching to always fetch fresh data
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 const defaultContent: HomePageContent = {
   hero: {
     title: 'Instant Agency',

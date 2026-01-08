@@ -47,24 +47,27 @@ export async function PUT(
     const { id } = await params;
     const data = await request.json();
 
+    // Build update object with only provided fields (partial update support)
+    const updateData: Record<string, unknown> = {};
+
+    if (data.name !== undefined) updateData.name = data.name;
+    if (data.nameKr !== undefined) updateData.nameKr = data.nameKr;
+    if (data.slug !== undefined) updateData.slug = data.slug;
+    if (data.category !== undefined) updateData.category = data.category;
+    if (data.featured !== undefined) updateData.featured = data.featured;
+    if (data.profileImage !== undefined) updateData.profileImage = data.profileImage;
+    if (data.galleryImages !== undefined) updateData.galleryImages = data.galleryImages;
+    if (data.stats !== undefined) updateData.stats = data.stats;
+    if (data.location !== undefined) updateData.location = data.location;
+    if (data.bio !== undefined) updateData.bio = data.bio;
+    if (data.experience !== undefined) updateData.experience = data.experience;
+    if (data.social !== undefined) updateData.social = data.social;
+    if (data.active !== undefined) updateData.active = data.active;
+    if (data.order !== undefined) updateData.order = data.order;
+
     const model = await prisma.model.update({
       where: { id },
-      data: {
-        name: data.name,
-        nameKr: data.nameKr,
-        slug: data.slug,
-        category: data.category,
-        featured: data.featured,
-        profileImage: data.profileImage,
-        galleryImages: data.galleryImages,
-        stats: data.stats,
-        location: data.location,
-        bio: data.bio,
-        experience: data.experience,
-        social: data.social,
-        active: data.active,
-        order: data.order,
-      },
+      data: updateData,
     });
 
     return NextResponse.json({ success: true, data: model });

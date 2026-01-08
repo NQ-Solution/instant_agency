@@ -1,6 +1,6 @@
 import Navigation from '@/components/public/Navigation';
 import Footer from '@/components/public/Footer';
-import ScrollSnapProvider from '@/components/public/ScrollSnapProvider';
+import FloatingContactCard from '@/components/public/FloatingContactCard';
 
 export default function PublicLayout({
   children,
@@ -9,12 +9,12 @@ export default function PublicLayout({
 }) {
   return (
     <>
-      <ScrollSnapProvider />
       {/* Background Circles */}
       <div className="bg-circles" aria-hidden="true" />
       <Navigation />
       <main>{children}</main>
       <Footer />
+      <FloatingContactCard />
     </>
   );
 }

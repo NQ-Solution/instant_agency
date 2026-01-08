@@ -14,15 +14,24 @@ export async function GET(
 
     // If page doesn't exist, return default structure
     if (!page) {
-      return NextResponse.json({ success: true, data: { pageId, sections: [] } });
+      return NextResponse.json(
+        { success: true, data: { pageId, sections: [] } },
+        { headers: { 'Cache-Control': 'no-store, max-age=0' } }
+      );
     }
 
-    return NextResponse.json({ success: true, data: page });
+    return NextResponse.json(
+      { success: true, data: page },
+      { headers: { 'Cache-Control': 'no-store, max-age=0' } }
+    );
   } catch (error) {
     console.error('Error fetching page:', error);
     const { pageId } = await params;
     const page = sampleDataStore.getPage(pageId) || { pageId, sections: [] };
-    return NextResponse.json({ success: true, data: page, source: 'sample' });
+    return NextResponse.json(
+      { success: true, data: page, source: 'sample' },
+      { headers: { 'Cache-Control': 'no-store, max-age=0' } }
+    );
   }
 }
 

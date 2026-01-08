@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { Mail, Phone, MapPin, Clock, Send } from 'lucide-react';
 import BookingCalendar from '@/components/public/BookingCalendar';
 import type { ContactPageContent } from '@/types';
@@ -43,8 +44,25 @@ const defaultContent: ContactPageContent = {
 };
 
 export default function ContactPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--text)]"></div>
+      </div>
+    }>
+      <ContactPageInner />
+    </Suspense>
+  );
+}
+
+function ContactPageInner() {
+  const searchParams = useSearchParams();
+  const tabParam = searchParams.get('tab');
+
   const [content, setContent] = useState<ContactPageContent>(defaultContent);
-  const [activeTab, setActiveTab] = useState<'inquiry' | 'booking'>('inquiry');
+  const [activeTab, setActiveTab] = useState<'inquiry' | 'booking'>(
+    tabParam === 'booking' ? 'booking' : 'inquiry'
+  );
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -462,3 +480,4 @@ export default function ContactPage() {
     </div>
   );
 }
+

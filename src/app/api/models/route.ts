@@ -24,8 +24,8 @@ export async function GET(request: NextRequest) {
     if (featured === 'true') {
       where.featured = true;
     }
-    // Include inactive models if requested, otherwise filter by active only
-    if (includeInactive !== 'true' && active !== 'false') {
+    // Include inactive models if requested (active=all), otherwise filter by active only
+    if (active !== 'all' && includeInactive !== 'true') {
       where.active = true;
     }
 
