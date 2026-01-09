@@ -148,6 +148,19 @@ export default function Footer() {
           <p className="text-xs tracking-widest text-muted text-center">
             &copy; {new Date().getFullYear()} {settings?.site?.name || 'Instant Agency'}. All rights reserved.
           </p>
+
+          {/* Credit */}
+          <p className="text-xs text-muted text-center mt-2">
+            Designed & Developed by{' '}
+            <a
+              href="https://nqsolution.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-theme transition-colors"
+            >
+              NQSolution
+            </a>
+          </p>
         </div>
       </div>
     </footer>
