@@ -71,11 +71,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Parse date string (YYYY-MM-DD) and set to noon to avoid timezone issues
+    const [year, month, day] = data.date.split('-').map(Number);
+    const bookingDate = new Date(year, month - 1, day, 12, 0, 0);
+
     // Check for conflicts
-    const startOfDay = new Date(data.date);
-    startOfDay.setHours(0, 0, 0, 0);
-    const endOfDay = new Date(data.date);
-    endOfDay.setHours(23, 59, 59, 999);
+    const startOfDay = new Date(year, month - 1, day, 0, 0, 0);
+    const endOfDay = new Date(year, month - 1, day, 23, 59, 59, 999);
 
     const existingBooking = await prisma.booking.findFirst({
       where: {
@@ -94,7 +96,7 @@ export async function POST(request: NextRequest) {
 
     const booking = await prisma.booking.create({
       data: {
-        date: new Date(data.date),
+        date: bookingDate,
         time: data.time,
         endTime: data.endTime,
         service: data.service,

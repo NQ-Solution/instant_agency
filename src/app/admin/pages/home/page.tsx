@@ -1,10 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { ArrowLeft, Save, Plus, Trash2, Upload, Star, ExternalLink } from 'lucide-react';
+import { ArrowLeft, Save, Plus, Trash2, Upload, Star, ExternalLink, Video } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
-import type { HomePageContent, DivisionItem, StatItem, Model } from '@/types';
+import type { HomePageContent, DivisionItem, StatItem, Model, VideoSection } from '@/types';
 
 const defaultContent: HomePageContent = {
   hero: {
@@ -53,6 +53,16 @@ const defaultContent: HomePageContent = {
     { value: '1K+', label: 'Campaigns' },
     { value: '14', label: 'Years' },
   ],
+  video: {
+    sectionNumber: '03',
+    title: 'Watch Our Story',
+    subtitle: '',
+    videoType: 'youtube',
+    videoUrl: '',
+    autoplay: false,
+    muted: true,
+    loop: false,
+  },
   about: {
     sectionNumber: '04',
     title: 'Creative\nBeyond Limits',
@@ -85,7 +95,7 @@ export default function EditHomePage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [content, setContent] = useState<HomePageContent>(defaultContent);
-  const [activeTab, setActiveTab] = useState<'hero' | 'divisions' | 'talents' | 'stats' | 'about' | 'cta'>('hero');
+  const [activeTab, setActiveTab] = useState<'hero' | 'divisions' | 'talents' | 'stats' | 'video' | 'about' | 'cta'>('hero');
   const [models, setModels] = useState<Model[]>([]);
   const [modelsLoading, setModelsLoading] = useState(false);
 
@@ -302,6 +312,7 @@ export default function EditHomePage() {
     { id: 'divisions' as const, label: 'What We Do' },
     { id: 'talents' as const, label: 'Our Talents' },
     { id: 'stats' as const, label: 'Stats' },
+    { id: 'video' as const, label: 'Video' },
     { id: 'about' as const, label: 'About' },
     { id: 'cta' as const, label: 'CTA' },
   ];
@@ -600,6 +611,208 @@ export default function EditHomePage() {
                 </button>
               </div>
             ))}
+          </div>
+        )}
+
+        {/* Video Section */}
+        {activeTab === 'video' && (
+          <div className="border border-[var(--text)]/10 rounded-lg p-6 space-y-4">
+            <div className="flex items-center gap-3 mb-4">
+              <Video size={24} />
+              <h2 className="font-serif text-xl">Video Section</h2>
+            </div>
+            <p className="text-sm text-[var(--text-muted)] mb-4">
+              홈페이지에 표시할 동영상을 설정합니다. YouTube, Vimeo URL 또는 직접 업로드한 동영상을 사용할 수 있습니다.
+            </p>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs tracking-wider uppercase text-[var(--text-muted)] mb-2">Section Number</label>
+                <input
+                  type="text"
+                  value={content.video?.sectionNumber || '03'}
+                  onChange={(e) => setContent({ ...content, video: { ...content.video!, sectionNumber: e.target.value } })}
+                  className="w-full px-4 py-3 bg-transparent border border-[var(--text)]/20 rounded-lg focus:outline-none focus:border-[var(--text)]"
+                />
+              </div>
+              <div>
+                <label className="block text-xs tracking-wider uppercase text-[var(--text-muted)] mb-2">Section Title</label>
+                <input
+                  type="text"
+                  value={content.video?.title || ''}
+                  onChange={(e) => setContent({ ...content, video: { ...content.video!, title: e.target.value } })}
+                  className="w-full px-4 py-3 bg-transparent border border-[var(--text)]/20 rounded-lg focus:outline-none focus:border-[var(--text)]"
+                />
+              </div>
+            </div>
+            <div>
+              <label className="block text-xs tracking-wider uppercase text-[var(--text-muted)] mb-2">Subtitle</label>
+              <input
+                type="text"
+                value={content.video?.subtitle || ''}
+                onChange={(e) => setContent({ ...content, video: { ...content.video!, subtitle: e.target.value } })}
+                placeholder="동영상 섹션에 대한 설명 (선택사항)"
+                className="w-full px-4 py-3 bg-transparent border border-[var(--text)]/20 rounded-lg focus:outline-none focus:border-[var(--text)]"
+              />
+            </div>
+            <div>
+              <label className="block text-xs tracking-wider uppercase text-[var(--text-muted)] mb-2">Video Type</label>
+              <div className="flex gap-4">
+                {(['youtube', 'vimeo', 'upload'] as const).map((type) => (
+                  <label key={type} className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="videoType"
+                      value={type}
+                      checked={content.video?.videoType === type}
+                      onChange={(e) => setContent({ ...content, video: { ...content.video!, videoType: e.target.value as 'youtube' | 'vimeo' | 'upload' } })}
+                      className="w-4 h-4"
+                    />
+                    <span className="text-sm capitalize">{type}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+            <div>
+              <label className="block text-xs tracking-wider uppercase text-[var(--text-muted)] mb-2">
+                {content.video?.videoType === 'upload' ? 'Video File' : 'Video URL'}
+              </label>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={content.video?.videoUrl || ''}
+                  onChange={(e) => setContent({ ...content, video: { ...content.video!, videoUrl: e.target.value } })}
+                  placeholder={
+                    content.video?.videoType === 'youtube'
+                      ? 'https://www.youtube.com/watch?v=...'
+                      : content.video?.videoType === 'vimeo'
+                      ? 'https://vimeo.com/...'
+                      : '동영상 파일 URL'
+                  }
+                  className="flex-1 px-4 py-3 bg-transparent border border-[var(--text)]/20 rounded-lg focus:outline-none focus:border-[var(--text)]"
+                />
+                {content.video?.videoType === 'upload' && (
+                  <label className="px-4 py-3 border border-[var(--text)]/20 rounded-lg cursor-pointer hover:bg-[var(--text)]/5 flex items-center gap-2">
+                    <Upload size={16} />
+                    <span className="text-sm">Upload</span>
+                    <input
+                      type="file"
+                      accept="video/*"
+                      className="hidden"
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          const formData = new FormData();
+                          formData.append('file', file);
+                          formData.append('folder', 'videos');
+                          try {
+                            const res = await fetch('/api/upload', {
+                              method: 'POST',
+                              body: formData,
+                            });
+                            const data = await res.json();
+                            if (data.success) {
+                              setContent({ ...content, video: { ...content.video!, videoUrl: data.data.url } });
+                            }
+                          } catch (error) {
+                            console.error('Upload error:', error);
+                          }
+                        }
+                      }}
+                    />
+                  </label>
+                )}
+              </div>
+            </div>
+            {content.video?.videoType === 'upload' && (
+              <div>
+                <label className="block text-xs tracking-wider uppercase text-[var(--text-muted)] mb-2">Thumbnail Image (Optional)</label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={content.video?.thumbnailUrl || ''}
+                    onChange={(e) => setContent({ ...content, video: { ...content.video!, thumbnailUrl: e.target.value } })}
+                    placeholder="썸네일 이미지 URL"
+                    className="flex-1 px-4 py-3 bg-transparent border border-[var(--text)]/20 rounded-lg focus:outline-none focus:border-[var(--text)]"
+                  />
+                  <label className="px-4 py-3 border border-[var(--text)]/20 rounded-lg cursor-pointer hover:bg-[var(--text)]/5">
+                    <Upload size={16} />
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) handleImageUpload(file, (url) => setContent({ ...content, video: { ...content.video!, thumbnailUrl: url } }));
+                      }}
+                    />
+                  </label>
+                </div>
+              </div>
+            )}
+            <div className="pt-4 border-t border-[var(--text)]/10">
+              <label className="block text-xs tracking-wider uppercase text-[var(--text-muted)] mb-3">Playback Options</label>
+              <div className="flex flex-wrap gap-6">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={content.video?.autoplay || false}
+                    onChange={(e) => setContent({ ...content, video: { ...content.video!, autoplay: e.target.checked } })}
+                    className="w-4 h-4"
+                  />
+                  <span className="text-sm">Autoplay</span>
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={content.video?.muted || false}
+                    onChange={(e) => setContent({ ...content, video: { ...content.video!, muted: e.target.checked } })}
+                    className="w-4 h-4"
+                  />
+                  <span className="text-sm">Muted</span>
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={content.video?.loop || false}
+                    onChange={(e) => setContent({ ...content, video: { ...content.video!, loop: e.target.checked } })}
+                    className="w-4 h-4"
+                  />
+                  <span className="text-sm">Loop</span>
+                </label>
+              </div>
+              <p className="text-xs text-[var(--text-muted)] mt-2">
+                * Autoplay는 Muted가 활성화되어 있어야 대부분의 브라우저에서 작동합니다.
+              </p>
+            </div>
+            {content.video?.videoUrl && (
+              <div className="pt-4">
+                <label className="block text-xs tracking-wider uppercase text-[var(--text-muted)] mb-2">Preview</label>
+                <div className="relative aspect-video w-full overflow-hidden rounded-lg bg-black">
+                  {content.video?.videoType === 'youtube' ? (
+                    <iframe
+                      src={`https://www.youtube.com/embed/${content.video.videoUrl.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/)?.[1] || ''}`}
+                      className="absolute inset-0 w-full h-full"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                    />
+                  ) : content.video?.videoType === 'vimeo' ? (
+                    <iframe
+                      src={`https://player.vimeo.com/video/${content.video.videoUrl.match(/(?:vimeo\.com\/)(\d+)/)?.[1] || ''}`}
+                      className="absolute inset-0 w-full h-full"
+                      allow="autoplay; fullscreen; picture-in-picture"
+                      allowFullScreen
+                    />
+                  ) : (
+                    <video
+                      src={content.video.videoUrl}
+                      className="absolute inset-0 w-full h-full object-cover"
+                      controls
+                      poster={content.video?.thumbnailUrl}
+                    />
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         )}
 

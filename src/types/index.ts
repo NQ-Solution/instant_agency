@@ -242,6 +242,18 @@ export interface CTASection {
   offices: { title: string; address: string }[];
 }
 
+export interface VideoSection {
+  sectionNumber: string;
+  title: string;
+  subtitle: string;
+  videoType: 'youtube' | 'vimeo' | 'upload';
+  videoUrl: string;
+  thumbnailUrl?: string;
+  autoplay?: boolean;
+  muted?: boolean;
+  loop?: boolean;
+}
+
 export interface HomePageContent {
   hero: HeroSection;
   divisions: {
@@ -255,6 +267,7 @@ export interface HomePageContent {
     buttonText: string;
   };
   stats: StatItem[];
+  video?: VideoSection;
   about: AboutPreview;
   cta: CTASection;
 }

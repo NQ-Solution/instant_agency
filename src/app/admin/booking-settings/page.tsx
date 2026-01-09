@@ -11,7 +11,10 @@ const months = [
 
 const weekdayNames = ['일', '월', '화', '수', '목', '금', '토'];
 
-const defaultTimes = ['09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00'];
+const morningTimes = ['07:00', '08:00', '09:00', '10:00', '11:00'];
+const afternoonTimes = ['12:00', '13:00', '14:00', '15:00', '16:00', '17:00'];
+const eveningTimes = ['18:00', '19:00', '20:00', '21:00'];
+const allTimes = [...morningTimes, ...afternoonTimes, ...eveningTimes];
 
 function formatDate(date: Date): string {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
@@ -182,6 +185,43 @@ export default function BookingSettingsPage() {
     }
   };
 
+  const selectAllTimes = () => {
+    setSettings({
+      ...settings,
+      availableTimes: [...allTimes],
+    });
+  };
+
+  const clearAllTimes = () => {
+    setSettings({
+      ...settings,
+      availableTimes: [],
+    });
+  };
+
+  const selectTimeGroup = (times: string[]) => {
+    const newTimes = new Set([...settings.availableTimes, ...times]);
+    setSettings({
+      ...settings,
+      availableTimes: Array.from(newTimes).sort(),
+    });
+  };
+
+  const clearTimeGroup = (times: string[]) => {
+    setSettings({
+      ...settings,
+      availableTimes: settings.availableTimes.filter(t => !times.includes(t)),
+    });
+  };
+
+  const isGroupSelected = (times: string[]) => {
+    return times.every(t => settings.availableTimes.includes(t));
+  };
+
+  const isGroupPartial = (times: string[]) => {
+    return times.some(t => settings.availableTimes.includes(t)) && !isGroupSelected(times);
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -201,24 +241,129 @@ export default function BookingSettingsPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Available Times */}
           <section className="border border-[var(--text)]/10 rounded-lg p-6">
-            <div className="flex items-center gap-2 mb-4">
-              <Clock size={20} />
-              <h2 className="font-serif text-xl">예약 가능 시간</h2>
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <Clock size={20} />
+                <h2 className="font-serif text-xl">예약 가능 시간 (KST)</h2>
+              </div>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={selectAllTimes}
+                  className="px-3 py-1 text-xs border border-green-500 text-green-600 rounded hover:bg-green-500/10"
+                >
+                  전체 선택
+                </button>
+                <button
+                  type="button"
+                  onClick={clearAllTimes}
+                  className="px-3 py-1 text-xs border border-red-500 text-red-600 rounded hover:bg-red-500/10"
+                >
+                  전체 해제
+                </button>
+              </div>
             </div>
-            <p className="text-sm text-[var(--text-muted)] mb-4">
-              고객이 예약할 수 있는 시간대를 설정합니다
+            <p className="text-sm text-[var(--text-muted)] mb-6">
+              클릭하여 예약 가능한 시간대를 선택하세요 (한국 시간 기준)
             </p>
 
-            {/* Quick select default times */}
+            {/* Morning times */}
             <div className="mb-4">
-              <p className="text-xs tracking-wider uppercase text-[var(--text-muted)] mb-2">시간 선택</p>
-              <div className="flex flex-wrap gap-2">
-                {defaultTimes.map((time) => (
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-xs tracking-wider uppercase text-[var(--text-muted)]">오전</p>
+                <button
+                  type="button"
+                  onClick={() => isGroupSelected(morningTimes) ? clearTimeGroup(morningTimes) : selectTimeGroup(morningTimes)}
+                  className={`px-2 py-0.5 text-[10px] rounded ${
+                    isGroupSelected(morningTimes)
+                      ? 'bg-green-500/20 text-green-600'
+                      : isGroupPartial(morningTimes)
+                      ? 'bg-yellow-500/20 text-yellow-600'
+                      : 'bg-[var(--text)]/10 text-[var(--text-muted)]'
+                  }`}
+                >
+                  {isGroupSelected(morningTimes) ? '선택됨' : '전체선택'}
+                </button>
+              </div>
+              <div className="grid grid-cols-5 gap-2">
+                {morningTimes.map((time) => (
                   <button
                     key={time}
                     type="button"
                     onClick={() => toggleDefaultTime(time)}
-                    className={`px-3 py-2 text-sm border rounded transition-colors ${
+                    className={`py-3 text-sm border rounded transition-colors ${
+                      settings.availableTimes.includes(time)
+                        ? 'bg-green-500/20 border-green-500 text-green-600'
+                        : 'border-[var(--text)]/20 hover:border-[var(--text)]/50'
+                    }`}
+                  >
+                    {time}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Afternoon times */}
+            <div className="mb-4">
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-xs tracking-wider uppercase text-[var(--text-muted)]">오후</p>
+                <button
+                  type="button"
+                  onClick={() => isGroupSelected(afternoonTimes) ? clearTimeGroup(afternoonTimes) : selectTimeGroup(afternoonTimes)}
+                  className={`px-2 py-0.5 text-[10px] rounded ${
+                    isGroupSelected(afternoonTimes)
+                      ? 'bg-green-500/20 text-green-600'
+                      : isGroupPartial(afternoonTimes)
+                      ? 'bg-yellow-500/20 text-yellow-600'
+                      : 'bg-[var(--text)]/10 text-[var(--text-muted)]'
+                  }`}
+                >
+                  {isGroupSelected(afternoonTimes) ? '선택됨' : '전체선택'}
+                </button>
+              </div>
+              <div className="grid grid-cols-6 gap-2">
+                {afternoonTimes.map((time) => (
+                  <button
+                    key={time}
+                    type="button"
+                    onClick={() => toggleDefaultTime(time)}
+                    className={`py-3 text-sm border rounded transition-colors ${
+                      settings.availableTimes.includes(time)
+                        ? 'bg-green-500/20 border-green-500 text-green-600'
+                        : 'border-[var(--text)]/20 hover:border-[var(--text)]/50'
+                    }`}
+                  >
+                    {time}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Evening times */}
+            <div className="mb-4">
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-xs tracking-wider uppercase text-[var(--text-muted)]">저녁</p>
+                <button
+                  type="button"
+                  onClick={() => isGroupSelected(eveningTimes) ? clearTimeGroup(eveningTimes) : selectTimeGroup(eveningTimes)}
+                  className={`px-2 py-0.5 text-[10px] rounded ${
+                    isGroupSelected(eveningTimes)
+                      ? 'bg-green-500/20 text-green-600'
+                      : isGroupPartial(eveningTimes)
+                      ? 'bg-yellow-500/20 text-yellow-600'
+                      : 'bg-[var(--text)]/10 text-[var(--text-muted)]'
+                  }`}
+                >
+                  {isGroupSelected(eveningTimes) ? '선택됨' : '전체선택'}
+                </button>
+              </div>
+              <div className="grid grid-cols-4 gap-2">
+                {eveningTimes.map((time) => (
+                  <button
+                    key={time}
+                    type="button"
+                    onClick={() => toggleDefaultTime(time)}
+                    className={`py-3 text-sm border rounded transition-colors ${
                       settings.availableTimes.includes(time)
                         ? 'bg-green-500/20 border-green-500 text-green-600'
                         : 'border-[var(--text)]/20 hover:border-[var(--text)]/50'
@@ -231,47 +376,34 @@ export default function BookingSettingsPage() {
             </div>
 
             {/* Custom time input */}
-            <div className="flex gap-2 mb-4">
-              <input
-                type="time"
-                value={newTime}
-                onChange={(e) => setNewTime(e.target.value)}
-                className="flex-1 px-4 py-2 bg-transparent border border-[var(--text)]/20 rounded focus:outline-none focus:border-[var(--text)]"
-              />
-              <button
-                type="button"
-                onClick={addTime}
-                disabled={!newTime}
-                className="px-4 py-2 bg-theme-inverse text-theme-inverse rounded hover:opacity-90 disabled:opacity-50"
-              >
-                <Plus size={18} />
-              </button>
+            <div className="pt-4 border-t border-[var(--text)]/10">
+              <p className="text-xs tracking-wider uppercase text-[var(--text-muted)] mb-2">커스텀 시간 추가</p>
+              <div className="flex gap-2">
+                <input
+                  type="time"
+                  value={newTime}
+                  onChange={(e) => setNewTime(e.target.value)}
+                  className="flex-1 px-4 py-2 bg-transparent border border-[var(--text)]/20 rounded focus:outline-none focus:border-[var(--text)]"
+                />
+                <button
+                  type="button"
+                  onClick={addTime}
+                  disabled={!newTime}
+                  className="px-4 py-2 bg-theme-inverse text-theme-inverse rounded hover:opacity-90 disabled:opacity-50"
+                >
+                  <Plus size={18} />
+                </button>
+              </div>
             </div>
 
-            {/* Current times list */}
-            <div className="space-y-2">
-              <p className="text-xs tracking-wider uppercase text-[var(--text-muted)]">현재 설정된 시간</p>
-              <div className="flex flex-wrap gap-2">
-                {settings.availableTimes.length === 0 ? (
-                  <p className="text-sm text-[var(--text-muted)]">설정된 시간이 없습니다</p>
-                ) : (
-                  settings.availableTimes.map((time) => (
-                    <span
-                      key={time}
-                      className="flex items-center gap-2 px-3 py-1 bg-[var(--text)]/10 rounded text-sm"
-                    >
-                      {time}
-                      <button
-                        type="button"
-                        onClick={() => removeTime(time)}
-                        className="text-red-500 hover:text-red-400"
-                      >
-                        <X size={14} />
-                      </button>
-                    </span>
-                  ))
+            {/* Summary */}
+            <div className="mt-4 pt-4 border-t border-[var(--text)]/10">
+              <p className="text-xs text-[var(--text-muted)]">
+                선택된 시간: <span className="text-green-600 font-medium">{settings.availableTimes.length}개</span>
+                {settings.availableTimes.length > 0 && (
+                  <span className="ml-2">({settings.availableTimes.join(', ')})</span>
                 )}
-              </div>
+              </p>
             </div>
           </section>
 

@@ -149,3 +149,17 @@ model LiveVideo {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+
+// Backup (압축 백업 - 최대 3개 유지)
+model Backup {
+  id          String   @id @default(cuid())
+  name        String   // 백업 이름 (예: "2025-01-09 자동백업")
+  description String?  // 백업 설명
+  data        String   @db.Text // gzip 압축 후 base64 인코딩된 데이터
+  size        Int      // 원본 크기 (bytes)
+  compressedSize Int   // 압축 후 크기 (bytes)
+  includesImages Boolean @default(false)
+  createdAt   DateTime @default(now())
+
+  @@index([createdAt])
+}

@@ -6,6 +6,16 @@ import Image from 'next/image';
 import PageGuard from '@/components/public/PageGuard';
 import type { HomePageContent } from '@/types';
 
+function getYouTubeId(url: string): string {
+  const match = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/);
+  return match ? match[1] : '';
+}
+
+function getVimeoId(url: string): string {
+  const match = url.match(/(?:vimeo\.com\/)(\d+)/);
+  return match ? match[1] : '';
+}
+
 const defaultContent: HomePageContent = {
   hero: {
     title: 'Instant Agency',
@@ -23,6 +33,16 @@ const defaultContent: HomePageContent = {
     buttonText: 'View All Models',
   },
   stats: [],
+  video: {
+    sectionNumber: '03',
+    title: 'Watch Our Story',
+    subtitle: '',
+    videoType: 'youtube',
+    videoUrl: '',
+    autoplay: false,
+    muted: true,
+    loop: false,
+  },
   about: {
     sectionNumber: '04',
     title: 'Creative\nBeyond Limits',
@@ -229,6 +249,54 @@ export default function HomePage() {
                 </p>
               </div>
             ))}
+          </div>
+        </section>
+      )}
+
+      {/* Video Section */}
+      {content.video?.videoUrl && (
+        <section className="min-h-screen flex flex-col justify-center py-24 px-8">
+          <div className="text-center mb-12">
+            <p className="text-xs tracking-[0.3em] uppercase text-muted mb-4">{content.video.sectionNumber}</p>
+            <h2 className="font-serif text-4xl md:text-5xl lg:text-6xl font-normal mb-4">
+              {content.video.title}
+            </h2>
+            {content.video.subtitle && (
+              <p className="text-muted text-lg max-w-2xl mx-auto">{content.video.subtitle}</p>
+            )}
+          </div>
+          <div className="max-w-5xl mx-auto w-full">
+            {content.video.videoType === 'youtube' ? (
+              <div className="relative aspect-video w-full overflow-hidden rounded-lg">
+                <iframe
+                  src={`https://www.youtube.com/embed/${getYouTubeId(content.video.videoUrl)}${content.video.autoplay ? '?autoplay=1' : ''}${content.video.muted ? '&mute=1' : ''}${content.video.loop ? '&loop=1' : ''}`}
+                  className="absolute inset-0 w-full h-full"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                />
+              </div>
+            ) : content.video.videoType === 'vimeo' ? (
+              <div className="relative aspect-video w-full overflow-hidden rounded-lg">
+                <iframe
+                  src={`https://player.vimeo.com/video/${getVimeoId(content.video.videoUrl)}${content.video.autoplay ? '?autoplay=1' : ''}${content.video.muted ? '&muted=1' : ''}${content.video.loop ? '&loop=1' : ''}`}
+                  className="absolute inset-0 w-full h-full"
+                  allow="autoplay; fullscreen; picture-in-picture"
+                  allowFullScreen
+                />
+              </div>
+            ) : (
+              <div className="relative aspect-video w-full overflow-hidden rounded-lg bg-black">
+                <video
+                  src={content.video.videoUrl}
+                  className="absolute inset-0 w-full h-full object-cover"
+                  controls
+                  autoPlay={content.video.autoplay}
+                  muted={content.video.muted}
+                  loop={content.video.loop}
+                  poster={content.video.thumbnailUrl}
+                />
+              </div>
+            )}
           </div>
         </section>
       )}

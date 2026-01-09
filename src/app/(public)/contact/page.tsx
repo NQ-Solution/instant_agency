@@ -73,6 +73,9 @@ function ContactPageInner() {
     company: '',
     subject: '',
     message: '',
+    instagram: '',
+    tiktok: '',
+    youtube: '',
     privacyConsent: false,
   });
   const [loading, setLoading] = useState(false);
@@ -134,6 +137,9 @@ function ContactPageInner() {
           company: '',
           subject: '',
           message: '',
+          instagram: '',
+          tiktok: '',
+          youtube: '',
           privacyConsent: false,
         });
         setTimeout(() => setSuccess(false), 5000);
@@ -194,7 +200,7 @@ function ContactPageInner() {
                 : 'text-muted hover:text-theme'
             }`}
           >
-            Profile Submission
+            Profile Reservation
             <span className={`absolute bottom-0 left-0 h-px bg-theme transition-all duration-300 ${
               activeTab === 'booking' ? 'w-full' : 'w-0'
             }`} />
@@ -207,7 +213,7 @@ function ContactPageInner() {
                 : 'text-muted hover:text-theme'
             }`}
           >
-            Inquiry
+            Live Commerce
             <span className={`absolute bottom-0 left-0 h-px bg-theme transition-all duration-300 ${
               activeTab === 'inquiry' ? 'w-full' : 'w-0'
             }`} />
@@ -220,9 +226,9 @@ function ContactPageInner() {
         <div className="max-w-6xl mx-auto">
           {activeTab === 'booking' ? (
             <div>
-              <h2 className="text-2xl mb-4 text-center">Profile Submission Meeting</h2>
+              <h2 className="text-2xl mb-4 text-center">프로필 접수 및 지원</h2>
               <p className="text-muted text-center mb-8">
-                Schedule a meeting for profile submission and consultation.
+                프로필 접수 및 상담을 위한 미팅을 예약하세요.
               </p>
               <BookingCalendar />
             </div>
@@ -230,11 +236,14 @@ function ContactPageInner() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
               {/* Contact Form */}
               <div className="p-8 border border-theme-10 bg-[var(--bg)]/80 backdrop-blur-sm">
-                <h2 className="text-2xl mb-8">Send a Message</h2>
+                <h2 className="text-2xl mb-4">라이브커머스 지원</h2>
+                <p className="text-muted text-sm mb-8">
+                  라이브커머스 진행자 지원 또는 브랜드/기업 협업 문의를 남겨주세요.
+                </p>
 
                 {success && (
                   <div className="bg-green-500/10 border border-green-500/30 text-green-500 p-4 rounded-lg mb-6">
-                    Your message has been sent successfully. We will contact you soon.
+                    지원서가 성공적으로 제출되었습니다. 빠른 시일 내에 연락드리겠습니다.
                   </div>
                 )}
 
@@ -248,7 +257,7 @@ function ContactPageInner() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                       <label className="block text-xs tracking-wider uppercase text-muted mb-2">
-                        Name *
+                        이름 *
                       </label>
                       <input
                         type="text"
@@ -260,7 +269,7 @@ function ContactPageInner() {
                     </div>
                     <div>
                       <label className="block text-xs tracking-wider uppercase text-muted mb-2">
-                        Email *
+                        이메일 *
                       </label>
                       <input
                         type="email"
@@ -274,7 +283,7 @@ function ContactPageInner() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                       <label className="block text-xs tracking-wider uppercase text-muted mb-2">
-                        Phone
+                        연락처
                       </label>
                       <input
                         type="tel"
@@ -285,7 +294,7 @@ function ContactPageInner() {
                     </div>
                     <div>
                       <label className="block text-xs tracking-wider uppercase text-muted mb-2">
-                        Company
+                        소속/회사
                       </label>
                       <input
                         type="text"
@@ -297,7 +306,7 @@ function ContactPageInner() {
                   </div>
                   <div>
                     <label className="block text-xs tracking-wider uppercase text-muted mb-2">
-                      Subject *
+                      지원 유형 *
                     </label>
                     <select
                       value={formData.subject}
@@ -305,23 +314,60 @@ function ContactPageInner() {
                       className="w-full px-4 py-3 bg-transparent border border-theme-20 focus:border-theme transition-colors"
                       required
                     >
-                      <option value="">Select a subject</option>
-                      <option value="studio">Studio Inquiry</option>
-                      <option value="model">Model Casting</option>
-                      <option value="live">Live Commerce</option>
-                      <option value="partnership">Partnership</option>
-                      <option value="other">Other</option>
+                      <option value="">지원 유형을 선택해주세요</option>
+                      <option value="creator">크리에이터 지원</option>
+                      <option value="brand">브랜드·기업 문의</option>
                     </select>
+                  </div>
+                  {/* Social Media */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div>
+                      <label className="block text-xs tracking-wider uppercase text-muted mb-2">
+                        인스타그램
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.instagram}
+                        onChange={(e) => setFormData({ ...formData, instagram: e.target.value })}
+                        placeholder="@username"
+                        className="w-full px-4 py-3 bg-transparent border border-theme-20 focus:border-theme transition-colors"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs tracking-wider uppercase text-muted mb-2">
+                        틱톡
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.tiktok}
+                        onChange={(e) => setFormData({ ...formData, tiktok: e.target.value })}
+                        placeholder="@username"
+                        className="w-full px-4 py-3 bg-transparent border border-theme-20 focus:border-theme transition-colors"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs tracking-wider uppercase text-muted mb-2">
+                        유튜브
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.youtube}
+                        onChange={(e) => setFormData({ ...formData, youtube: e.target.value })}
+                        placeholder="채널명 또는 URL"
+                        className="w-full px-4 py-3 bg-transparent border border-theme-20 focus:border-theme transition-colors"
+                      />
+                    </div>
                   </div>
                   <div>
                     <label className="block text-xs tracking-wider uppercase text-muted mb-2">
-                      Message *
+                      내용 *
                     </label>
                     <textarea
                       value={formData.message}
                       onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                       rows={5}
                       className="w-full px-4 py-3 bg-transparent border border-theme-20 focus:border-theme transition-colors resize-none"
+                      placeholder="자기소개, 경력, 포트폴리오 링크 등을 포함해주세요."
                       required
                     />
                   </div>
@@ -336,7 +382,7 @@ function ContactPageInner() {
                         required
                       />
                       <span className="text-xs text-muted leading-relaxed">
-                        개인정보 수집 및 이용에 동의합니다. 수집항목: 이름, 연락처, 이메일, 회사명 / 수집목적: 문의 응대 및 상담 / 보유기간: 문의 완료 후 1년
+                        개인정보 수집 및 이용에 동의합니다. 수집항목: 이름, 연락처, 이메일, 소속/회사명, SNS 계정 / 수집목적: 지원 심사 및 상담 / 보유기간: 지원 완료 후 1년
                       </span>
                     </label>
                   </div>
@@ -348,12 +394,12 @@ function ContactPageInner() {
                     {loading ? (
                       <>
                         <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current" />
-                        Sending...
+                        제출 중...
                       </>
                     ) : (
                       <>
                         <Send size={16} />
-                        Send Message
+                        지원서 제출
                       </>
                     )}
                   </button>

@@ -7,7 +7,6 @@ import type { BookingSettings } from '@/types';
 const serviceTypes = [
   { id: 'profile', name: '프로필 지원 및 접수' },
   { id: 'model', name: '모델 캐스팅' },
-  { id: 'live', name: '라이브 커머스 기획' },
   { id: 'general', name: '일반 미팅' },
 ];
 
@@ -97,12 +96,17 @@ export default function BookingCalendar() {
         // Filter out cancelled bookings and map to slots
         const slots = data.data
           .filter((b: { status: string }) => b.status !== 'cancelled')
-          .map((b: { date: string; time: string; customer: { name: string }; status: string }) => ({
-            date: new Date(b.date).toISOString().split('T')[0],
-            time: b.time,
-            customerName: b.customer?.name,
-            status: b.status,
-          }));
+          .map((b: { date: string; time: string; customer: { name: string }; status: string }) => {
+            // Convert to local date string to avoid timezone issues
+            const dateObj = new Date(b.date);
+            const localDateStr = `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, '0')}-${String(dateObj.getDate()).padStart(2, '0')}`;
+            return {
+              date: localDateStr,
+              time: b.time,
+              customerName: b.customer?.name,
+              status: b.status,
+            };
+          });
         setBookedSlots(slots);
       }
     } catch (error) {
@@ -217,11 +221,13 @@ export default function BookingCalendar() {
     setLoading(true);
 
     try {
+      // Use local date string to avoid timezone issues
+      const dateStr = formatDate(selectedDate);
       const res = await fetch('/api/bookings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          date: selectedDate.toISOString(),
+          date: dateStr,
           time: selectedTime,
           endTime: `${parseInt(selectedTime.split(':')[0]) + 1}:00`,
           service: formData.service,
