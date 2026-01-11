@@ -1,8 +1,9 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { Save, Plus, Trash2, ChevronLeft, ChevronRight, Calendar, Clock, X } from 'lucide-react';
+import { Save, Plus, ChevronLeft, ChevronRight, Calendar, Clock, X } from 'lucide-react';
 import type { BookingSettings } from '@/types';
+import { getKSTNow } from '@/lib/kst';
 
 const months = [
   '1월', '2월', '3월', '4월', '5월', '6월',
@@ -23,7 +24,8 @@ function formatDate(date: Date): string {
 export default function BookingSettingsPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [currentDate, setCurrentDate] = useState(new Date());
+  // KST 기준 현재 날짜로 초기화
+  const [currentDate, setCurrentDate] = useState(() => getKSTNow());
   const [settings, setSettings] = useState<BookingSettings>({
     availableTimes: ['09:00', '10:00', '11:00', '13:00', '14:00', '15:00', '16:00', '17:00'],
     blockedDates: [],
@@ -88,8 +90,9 @@ export default function BookingSettingsPage() {
   const calendarDays = useMemo(() => {
     const firstDay = new Date(year, month, 1).getDay();
     const daysInMonth = new Date(year, month + 1, 0).getDate();
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    // KST 기준 오늘 날짜
+    const kstNow = getKSTNow();
+    const today = new Date(kstNow.getFullYear(), kstNow.getMonth(), kstNow.getDate());
 
     const days: Array<{
       day: number | null;

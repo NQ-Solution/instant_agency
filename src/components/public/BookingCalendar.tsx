@@ -1,8 +1,17 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { ChevronLeft, ChevronRight, Check, X } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Check } from 'lucide-react';
 import type { BookingSettings } from '@/types';
+import {
+  getKSTNow,
+  getKSTToday,
+  formatDateToKST,
+  formatKSTDateKorean,
+  formatKSTDateShort,
+  getKSTTimeNow,
+  timeToMinutes,
+} from '@/lib/kst';
 
 const serviceTypes = [
   { id: 'profile', name: '프로필 지원 및 접수' },
@@ -43,12 +52,14 @@ interface BookingFormData {
   privacyConsent: boolean;
 }
 
+// KST 기준으로 날짜 문자열 생성
 function formatDate(date: Date): string {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 }
 
 export default function BookingCalendar() {
-  const [currentDate, setCurrentDate] = useState(new Date());
+  // KST 기준 현재 날짜로 초기화
+  const [currentDate, setCurrentDate] = useState(() => getKSTNow());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const [bookedSlots, setBookedSlots] = useState<BookedSlot[]>([]);
@@ -97,11 +108,11 @@ export default function BookingCalendar() {
         const slots = data.data
           .filter((b: { status: string }) => b.status !== 'cancelled')
           .map((b: { date: string; time: string; customer: { name: string }; status: string }) => {
-            // Convert to local date string to avoid timezone issues
+            // UTC에서 KST로 변환하여 날짜 문자열 생성
             const dateObj = new Date(b.date);
-            const localDateStr = `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, '0')}-${String(dateObj.getDate()).padStart(2, '0')}`;
+            const kstDateStr = formatDateToKST(dateObj);
             return {
-              date: localDateStr,
+              date: kstDateStr,
               time: b.time,
               customerName: b.customer?.name,
               status: b.status,
@@ -120,10 +131,12 @@ export default function BookingCalendar() {
   const calendarDays = useMemo(() => {
     const firstDay = new Date(year, month, 1).getDay();
     const daysInMonth = new Date(year, month + 1, 0).getDate();
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
 
-    // Calculate max booking date
+    // KST 기준 오늘 날짜
+    const kstNow = getKSTNow();
+    const today = new Date(kstNow.getFullYear(), kstNow.getMonth(), kstNow.getDate());
+
+    // KST 기준 최대 예약 가능 날짜
     const maxDate = new Date(today);
     maxDate.setDate(maxDate.getDate() + bookingSettings.maxAdvanceDays);
 
@@ -207,6 +220,22 @@ export default function BookingCalendar() {
 
   const isTimeBooked = (time: string) => {
     return bookedTimesForSelectedDate.some(slot => slot.time === time);
+  };
+
+  // KST 기준으로 시간이 지났는지 확인 (오늘 날짜인 경우)
+  const isTimePast = (time: string) => {
+    if (!selectedDate) return false;
+    const kstNow = getKSTNow();
+    const today = new Date(kstNow.getFullYear(), kstNow.getMonth(), kstNow.getDate());
+    const selectedDay = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate());
+
+    // 오늘이 아니면 시간 비교 불필요
+    if (selectedDay.getTime() !== today.getTime()) return false;
+
+    // 오늘이면 현재 시간과 비교
+    const nowMinutes = timeToMinutes(getKSTTimeNow());
+    const slotMinutes = timeToMinutes(time);
+    return slotMinutes <= nowMinutes;
   };
 
   const getBookerName = (time: string) => {
@@ -346,7 +375,7 @@ export default function BookingCalendar() {
             </span>
             <span className="font-serif">
               {selectedDate
-                ? selectedDate.toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' })
+                ? formatKSTDateKorean(selectedDate)
                 : '날짜를 선택해주세요'}
             </span>
           </div>
@@ -355,22 +384,28 @@ export default function BookingCalendar() {
             <div className="grid grid-cols-4 gap-2">
               {bookingSettings.availableTimes.map((time) => {
                 const booked = isTimeBooked(time);
+                const past = isTimePast(time);
+                const isDisabled = booked || past;
                 const isSelected = selectedTime === time;
 
                 return (
                   <button
                     key={time}
-                    disabled={booked}
+                    disabled={isDisabled}
                     onClick={() => handleTimeSelect(time)}
                     className={`
                       py-3 text-center text-sm border relative transition-all
-                      ${booked
+                      ${past
+                        ? 'border-gray-500/30 opacity-30 cursor-not-allowed'
+                        : booked
                         ? 'border-red-500/50 opacity-50 cursor-not-allowed'
                         : 'border-green-500/50 hover:bg-green-500 hover:text-white'}
                       ${isSelected ? 'bg-theme-inverse text-theme-inverse border-theme' : ''}
                     `}
                   >
-                    {booked ? (
+                    {past ? (
+                      <span className="text-gray-400 line-through">{time}</span>
+                    ) : booked ? (
                       <div className="flex flex-col items-center justify-center h-full">
                         <span className="text-[10px] text-muted line-through">{time}</span>
                         <span className="text-[10px] text-red-400 font-medium truncate max-w-full px-1">
@@ -404,6 +439,10 @@ export default function BookingCalendar() {
               <span className="w-2 h-2 rounded-full bg-gray-400" />
               <span>예약 불가</span>
             </div>
+            <div className="flex items-center gap-1 text-xs text-[var(--text-muted)]">
+              <span className="text-[10px]">🇰🇷</span>
+              <span>한국 시간 (KST)</span>
+            </div>
           </div>
         </div>
       </div>
@@ -430,7 +469,7 @@ export default function BookingCalendar() {
             <div className="mb-6 space-y-3">
               <div className="flex justify-between py-2 border-b border-[var(--text)]/5 text-sm">
                 <span className="text-[var(--text-muted)]">날짜</span>
-                <span>{selectedDate ? selectedDate.toLocaleDateString('ko-KR', { month: 'short', day: 'numeric', year: 'numeric' }) : '-'}</span>
+                <span>{selectedDate ? formatKSTDateShort(selectedDate) : '-'}</span>
               </div>
               <div className="flex justify-between py-2 border-b border-[var(--text)]/5 text-sm">
                 <span className="text-[var(--text-muted)]">시간</span>

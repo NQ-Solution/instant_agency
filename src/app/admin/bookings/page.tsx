@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Calendar, Clock, Check, X, Mail, Phone, User, Instagram, Eye } from 'lucide-react';
 import type { Booking } from '@/types';
+import { formatDateToKST } from '@/lib/kst';
 
 export default function BookingsPage() {
   const [bookings, setBookings] = useState<Booking[]>([]);
@@ -134,7 +135,7 @@ export default function BookingsPage() {
                     <div className="flex items-center gap-2">
                       <Calendar className="text-[var(--text-muted)]" size={16} />
                       <span>
-                        {new Date(booking.date).toLocaleDateString('ko-KR')}
+                        {formatDateToKST(new Date(booking.date))}
                       </span>
                     </div>
                     <div className="flex items-center gap-2">

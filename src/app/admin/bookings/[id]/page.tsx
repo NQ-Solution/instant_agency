@@ -8,6 +8,7 @@ import {
   Building, FileText, Check, X, Trash2, Edit
 } from 'lucide-react';
 import type { Booking } from '@/types';
+import { formatKSTDateKorean, formatDateToKST } from '@/lib/kst';
 
 const serviceLabels: Record<string, string> = {
   profile: '프로필 지원 및 접수',
@@ -366,12 +367,7 @@ export default function BookingDetailPage() {
                 <div>
                   <p className="text-xs text-[var(--text-muted)]">날짜</p>
                   <p className="font-medium">
-                    {new Date(booking.date).toLocaleDateString('ko-KR', {
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric',
-                      weekday: 'long',
-                    })}
+                    {formatKSTDateKorean(new Date(booking.date))}
                   </p>
                 </div>
               </div>
@@ -400,7 +396,7 @@ export default function BookingDetailPage() {
             <div className="border border-[var(--text)]/10 rounded-lg p-6">
               <h2 className="font-serif text-xl mb-4">생성 정보</h2>
               <p className="text-sm text-[var(--text-muted)]">
-                {new Date(booking.createdAt).toLocaleString('ko-KR')}
+                {new Date(booking.createdAt).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' })}
               </p>
             </div>
           )}
