@@ -22,6 +22,13 @@ export interface ModelSocial {
   portfolioPdf?: string;
 }
 
+export interface ModelVideo {
+  url: string;
+  thumbnail?: string;
+  title?: string;
+  type?: 'youtube' | 'vimeo' | 'upload';
+}
+
 export interface Model {
   id: string;
   name: string;
@@ -31,6 +38,7 @@ export interface Model {
   featured: boolean;
   profileImage: string;
   galleryImages: string[];
+  galleryVideos?: ModelVideo[];
   stats: ModelStats;
   location: string;
   bio?: string;
@@ -130,6 +138,8 @@ export interface BookingCustomer {
   email: string;
   phone: string;
   company?: string;
+  instagram?: string;
+  tiktok?: string;
 }
 
 export interface Booking {
