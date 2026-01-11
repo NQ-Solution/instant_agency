@@ -1,0 +1,13 @@
+name: instant-agency
+app: next.js
+options:
+  nodeversion: "24"
+  buildtype: standalone
+  install: npm ci
+  build: npm run build
+  healthz:
+    path: /api/health
+    initialDelaySeconds: 60
+    timeoutSeconds: 10
+    periodSeconds: 30
+  strategy: rolling
