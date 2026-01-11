@@ -20,6 +20,7 @@ model Model {
   featured      Boolean  @default(false)
   profileImage  String
   galleryImages String[] @default([])
+  galleryVideos Json     @default("[]") // [{ url, thumbnail?, title? }]
   stats         Json     // { height, bust, waist, hips, shoes, eyes, hair }
   location      String   @default("Seoul")
   bio           String?

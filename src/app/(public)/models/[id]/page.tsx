@@ -6,6 +6,13 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 
+interface ModelVideo {
+  url: string;
+  thumbnail?: string;
+  title?: string;
+  type?: 'youtube' | 'vimeo' | 'upload';
+}
+
 interface ModelData {
   id: string;
   name: string;
@@ -14,6 +21,7 @@ interface ModelData {
   category: string;
   profileImage: string;
   galleryImages: string[];
+  galleryVideos?: ModelVideo[];
   stats: {
     height?: string;
     bust?: string;
@@ -197,6 +205,57 @@ export default function ModelDetailPage({
                 />
               </div>
             ))}
+          </div>
+        </section>
+      )}
+
+      {/* Video Gallery */}
+      {model.galleryVideos && model.galleryVideos.length > 0 && (
+        <section className="py-16 bg-[var(--bg-secondary)]">
+          <div className="px-8 mb-8">
+            <h2 className="font-serif text-2xl">Videos</h2>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 px-8">
+            {model.galleryVideos.map((video: ModelVideo, index: number) => {
+              const isYouTube = video.type === 'youtube' || video.url.includes('youtube.com') || video.url.includes('youtu.be');
+              const isVimeo = video.type === 'vimeo' || video.url.includes('vimeo.com');
+
+              // Get embed URL for YouTube/Vimeo
+              let embedUrl = video.url;
+              if (isYouTube) {
+                const match = video.url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]+)/);
+                if (match) embedUrl = `https://www.youtube.com/embed/${match[1]}`;
+              } else if (isVimeo) {
+                const match = video.url.match(/vimeo\.com\/(\d+)/);
+                if (match) embedUrl = `https://player.vimeo.com/video/${match[1]}`;
+              }
+
+              return (
+                <div key={index} className="relative aspect-video bg-black rounded-lg overflow-hidden">
+                  {isYouTube || isVimeo ? (
+                    <iframe
+                      src={embedUrl}
+                      className="w-full h-full"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                    />
+                  ) : (
+                    <video
+                      src={video.url}
+                      className="w-full h-full object-cover"
+                      controls
+                      playsInline
+                      preload="metadata"
+                    />
+                  )}
+                  {video.title && (
+                    <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/70 to-transparent">
+                      <p className="text-white text-sm">{video.title}</p>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
         </section>
       )}

@@ -7,6 +7,8 @@ import Link from 'next/link';
 import type { Model } from '@/types';
 import ImageUpload from '@/components/admin/ImageUpload';
 import MultiImageUpload from '@/components/admin/MultiImageUpload';
+import MultiVideoUpload from '@/components/admin/MultiVideoUpload';
+import type { ModelVideo } from '@/types';
 
 export default function EditModelPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -22,6 +24,7 @@ export default function EditModelPage({ params }: { params: Promise<{ id: string
     featured: false,
     profileImage: '',
     galleryImages: [],
+    galleryVideos: [],
     stats: {
       height: '',
       bust: '',
@@ -206,6 +209,17 @@ export default function EditModelPage({ params }: { params: Promise<{ id: string
                 folder="models"
                 maxImages={12}
                 placeholder="갤러리 이미지 추가"
+              />
+            </div>
+            <div>
+              <label className="block text-xs tracking-wider uppercase text-[var(--text-muted)] mb-3">
+                Gallery Videos
+              </label>
+              <MultiVideoUpload
+                values={(formData.galleryVideos || []) as ModelVideo[]}
+                onChange={(videos) => setFormData({ ...formData, galleryVideos: videos })}
+                folder="models"
+                maxVideos={6}
               />
             </div>
           </div>

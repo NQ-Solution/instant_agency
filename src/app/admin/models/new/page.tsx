@@ -7,6 +7,8 @@ import Link from 'next/link';
 import { generateSlug } from '@/lib/utils';
 import ImageUpload from '@/components/admin/ImageUpload';
 import MultiImageUpload from '@/components/admin/MultiImageUpload';
+import MultiVideoUpload from '@/components/admin/MultiVideoUpload';
+import type { ModelVideo } from '@/types';
 
 export default function NewModelPage() {
   const router = useRouter();
@@ -19,6 +21,7 @@ export default function NewModelPage() {
     category: 'women',
     profileImage: '',
     galleryImages: [] as string[],
+    galleryVideos: [] as ModelVideo[],
     stats: {
       height: '',
       bust: '',
@@ -192,6 +195,17 @@ export default function NewModelPage() {
                 folder="models"
                 maxImages={12}
                 placeholder="갤러리 이미지 추가"
+              />
+            </div>
+            <div>
+              <label className="block text-xs tracking-wider uppercase text-[var(--text-muted)] mb-3">
+                Gallery Videos
+              </label>
+              <MultiVideoUpload
+                values={formData.galleryVideos}
+                onChange={(videos) => setFormData({ ...formData, galleryVideos: videos })}
+                folder="models"
+                maxVideos={6}
               />
             </div>
           </div>
