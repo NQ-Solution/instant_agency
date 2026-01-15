@@ -60,8 +60,9 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error('Error uploading file:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     return NextResponse.json(
-      { success: false, error: 'Failed to upload file' },
+      { success: false, error: `Failed to upload file: ${errorMessage}` },
       { status: 500 }
     );
   }

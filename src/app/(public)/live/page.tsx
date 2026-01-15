@@ -221,7 +221,7 @@ export default function LivePage() {
                   </div>
                 </div>
 
-                <div className="flex flex-col justify-center p-8 lg:p-16 bg-theme-5" style={{ direction: 'ltr' }}>
+                <div className="flex flex-col justify-center p-8 lg:p-16" style={{ direction: 'ltr' }}>
                   {item.label && (
                     <p className="text-xs tracking-widest uppercase text-rose-500 mb-6">
                       {item.label}
@@ -385,11 +385,11 @@ export default function LivePage() {
       <section className="py-16 bg-theme-inverse text-theme-inverse">
         <div className="grid grid-cols-2 md:grid-cols-4">
           {content.stats.map((stat, index) => (
-            <div key={stat.label} className={`py-12 px-8 text-center ${index < content.stats.length - 1 ? 'border-r border-current/10' : ''}`}>
-              <p className="text-4xl md:text-5xl lg:text-6xl font-normal leading-none mb-2">
+            <div key={stat.label} className={`py-8 md:py-12 px-4 md:px-8 text-center ${index % 2 === 0 ? 'border-r border-current/10' : ''} ${index < 2 ? 'border-b md:border-b-0 border-current/10' : ''} ${index < content.stats.length - 1 ? 'md:border-r md:border-current/10' : ''}`}>
+              <p className="text-3xl md:text-5xl lg:text-6xl font-normal leading-none mb-2">
                 {stat.value}
               </p>
-              <p className="text-xs tracking-wider uppercase opacity-60">
+              <p className="text-[0.65rem] md:text-xs tracking-wider uppercase opacity-60">
                 {stat.label}
               </p>
             </div>

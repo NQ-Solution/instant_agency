@@ -188,13 +188,52 @@ export default function HomePage() {
       {/* Divisions Section */}
       {content.divisions.items.length > 0 && (
         <section className="min-h-screen flex flex-col justify-center pt-16">
-          <div className="text-center px-8 mb-16">
+          <div className="text-center px-8 mb-8 md:mb-16">
             <p className="text-xs tracking-[0.3em] uppercase text-muted mb-4">{content.divisions.sectionNumber}</p>
             <h2 className="font-serif text-4xl md:text-5xl lg:text-6xl font-normal">
               {content.divisions.title}
             </h2>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3">
+          {/* Mobile: 가로 스크롤 */}
+          <div className="md:hidden overflow-x-auto scrollbar-hide">
+            <div className="flex gap-4 px-4 pb-4" style={{ width: `${content.divisions.items.length * 280 + (content.divisions.items.length - 1) * 16 + 32}px` }}>
+              {content.divisions.items.map((division) => (
+                <Link
+                  key={division.id}
+                  href={division.href}
+                  className="group relative w-[280px] flex-shrink-0 aspect-[3/4] overflow-hidden block rounded-lg"
+                >
+                  {division.image ? (
+                    <Image
+                      src={division.image}
+                      alt={division.title}
+                      fill
+                      className="object-cover"
+                    />
+                  ) : (
+                    <div className="absolute inset-0 bg-[var(--text)]/10" />
+                  )}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
+                  <div className="absolute bottom-0 left-0 right-0 p-5 text-white">
+                    <p className="text-[0.6rem] tracking-[0.3em] text-gray-400 mb-2">
+                      {division.number}
+                    </p>
+                    <h3 className="font-serif text-xl mb-2 tracking-wide">
+                      {division.title}
+                    </h3>
+                    <p className="text-xs leading-relaxed text-gray-400 line-clamp-2">
+                      {division.desc}
+                    </p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+            <p className="text-center text-[0.65rem] tracking-wider uppercase text-muted mt-2">
+              ← 스와이프 →
+            </p>
+          </div>
+          {/* Desktop: 그리드 */}
+          <div className="hidden md:grid md:grid-cols-3">
             {content.divisions.items.map((division) => (
               <Link
                 key={division.id}

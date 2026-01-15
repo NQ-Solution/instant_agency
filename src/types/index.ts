@@ -307,6 +307,14 @@ export interface AboutPageContent {
     title: string;
     buttonText: string;
   };
+  // Section visibility
+  sectionVisibility?: {
+    hero?: boolean;
+    story?: boolean;
+    values?: boolean;
+    timeline?: boolean;
+    cta?: boolean;
+  };
 }
 
 // Studio Page Content
@@ -329,6 +337,12 @@ export interface StudioPageContent {
     title: string;
     description: string;
     buttonText: string;
+  };
+  // Section visibility
+  sectionVisibility?: {
+    hero?: boolean;
+    info?: boolean;
+    cta?: boolean;
   };
 }
 

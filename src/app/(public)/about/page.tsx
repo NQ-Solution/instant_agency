@@ -62,6 +62,7 @@ export default function AboutPage() {
               values: { ...defaultContent.values, ...sections.content.values },
               timeline: { ...defaultContent.timeline, ...sections.content.timeline },
               cta: { ...defaultContent.cta, ...sections.content.cta },
+              sectionVisibility: sections.content.sectionVisibility,
             });
           }
         }
@@ -87,6 +88,7 @@ export default function AboutPage() {
     <PageGuard pageKey="about">
     <div>
       {/* Hero */}
+      {content.sectionVisibility?.hero !== false && (
       <section className="min-h-screen flex flex-col justify-center items-center text-center px-8 relative">
         <p className="text-xs tracking-[0.3em] uppercase text-muted mb-6 animate-fade-up">
           {content.hero.label}
@@ -104,8 +106,10 @@ export default function AboutPage() {
           <div className="w-px h-16 bg-gradient-to-b from-current to-transparent animate-scroll-pulse" />
         </div>
       </section>
+      )}
 
       {/* Story Section */}
+      {content.sectionVisibility?.story !== false && (
       <section className="py-24 px-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-32 max-w-[1400px] mx-auto items-center">
           {/* Image */}
@@ -137,8 +141,10 @@ export default function AboutPage() {
           </div>
         </div>
       </section>
+      )}
 
       {/* Values Section */}
+      {content.sectionVisibility?.values !== false && (
       <section className="py-24 bg-theme-inverse text-theme-inverse">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-normal">
@@ -158,6 +164,7 @@ export default function AboutPage() {
           ))}
         </div>
       </section>
+      )}
 
       {/* Timeline Section - Hidden for now, activate later */}
       {/*
@@ -195,6 +202,7 @@ export default function AboutPage() {
       */}
 
       {/* CTA Section */}
+      {content.sectionVisibility?.cta !== false && (
       <section className="py-24 px-8 text-center border-t border-theme-10">
         <h2 className="text-3xl md:text-4xl lg:text-5xl font-normal mb-8">
           {content.cta.title}
@@ -206,6 +214,7 @@ export default function AboutPage() {
           {content.cta.buttonText}
         </Link>
       </section>
+      )}
     </div>
     </PageGuard>
   );

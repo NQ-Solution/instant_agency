@@ -45,6 +45,7 @@ export default function StudioPage() {
               hero: { ...defaultContent.hero, ...sections.content.hero },
               info: { ...defaultContent.info, ...sections.content.info },
               cta: { ...defaultContent.cta, ...sections.content.cta },
+              sectionVisibility: sections.content.sectionVisibility,
             });
           }
         }
@@ -70,6 +71,7 @@ export default function StudioPage() {
     <PageGuard pageKey="studio">
     <div>
       {/* Hero */}
+      {content.sectionVisibility?.hero !== false && (
       <section className="min-h-screen flex flex-col justify-center items-center text-center px-8 relative">
         <span className="inline-block px-4 py-2 border border-theme-30 text-xs tracking-[0.3em] uppercase mb-8 animate-fade-up">
           {content.hero.tag}
@@ -90,8 +92,10 @@ export default function StudioPage() {
           <div className="w-px h-16 bg-gradient-to-b from-current to-transparent animate-scroll-pulse" />
         </div>
       </section>
+      )}
 
       {/* Studio Info */}
+      {content.sectionVisibility?.info !== false && (
       <section className="grid grid-cols-1 lg:grid-cols-2 min-h-[70vh]">
         <div className="relative aspect-square lg:aspect-auto">
           {content.info.image ? (
@@ -134,8 +138,10 @@ export default function StudioPage() {
           </Link>
         </div>
       </section>
+      )}
 
       {/* CTA */}
+      {content.sectionVisibility?.cta !== false && (
       <section className="py-24 px-8 text-center bg-theme-inverse text-theme-inverse">
         <h2 className="text-3xl md:text-4xl lg:text-5xl font-normal mb-4">
           {content.cta.title}
@@ -150,6 +156,7 @@ export default function StudioPage() {
           {content.cta.buttonText}
         </Link>
       </section>
+      )}
     </div>
     </PageGuard>
   );

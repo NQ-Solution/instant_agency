@@ -52,6 +52,16 @@ interface BookingFormData {
   privacyConsent: boolean;
 }
 
+interface ValidationErrors {
+  date?: string;
+  time?: string;
+  service?: string;
+  name?: string;
+  email?: string;
+  phone?: string;
+  privacyConsent?: string;
+}
+
 // KST 기준으로 날짜 문자열 생성
 function formatDate(date: Date): string {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
@@ -75,6 +85,7 @@ export default function BookingCalendar() {
     tiktok: '',
     privacyConsent: false,
   });
+  const [errors, setErrors] = useState<ValidationErrors>({});
 
   useEffect(() => {
     fetchBookedSlots();
@@ -212,10 +223,12 @@ export default function BookingCalendar() {
     if (!date) return;
     setSelectedDate(date);
     setSelectedTime(null);
+    if (errors.date) setErrors((prev) => ({ ...prev, date: undefined }));
   };
 
   const handleTimeSelect = (time: string) => {
     setSelectedTime(time);
+    if (errors.time) setErrors((prev) => ({ ...prev, time: undefined }));
   };
 
   const isTimeBooked = (time: string) => {
@@ -243,9 +256,54 @@ export default function BookingCalendar() {
     return slot?.customerName || '예약됨';
   };
 
+  const validateForm = (): boolean => {
+    const newErrors: ValidationErrors = {};
+
+    if (!selectedDate) {
+      newErrors.date = '날짜를 선택해주세요';
+    }
+    if (!selectedTime) {
+      newErrors.time = '시간을 선택해주세요';
+    }
+    if (!formData.service) {
+      newErrors.service = '상담 유형을 선택해주세요';
+    }
+    if (!formData.name.trim()) {
+      newErrors.name = '이름을 입력해주세요';
+    }
+    if (!formData.email.trim()) {
+      newErrors.email = '이메일을 입력해주세요';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      newErrors.email = '올바른 이메일 형식을 입력해주세요';
+    }
+    if (!formData.phone.trim()) {
+      newErrors.phone = '연락처를 입력해주세요';
+    }
+    if (!formData.privacyConsent) {
+      newErrors.privacyConsent = '개인정보 수집 및 이용에 동의해주세요';
+    }
+
+    setErrors(newErrors);
+
+    if (Object.keys(newErrors).length > 0) {
+      // Show alert with first error
+      const firstError = Object.values(newErrors)[0];
+      alert(firstError);
+      return false;
+    }
+
+    return true;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedDate || !selectedTime || !formData.service) return;
+
+    if (!validateForm()) {
+      return;
+    }
+
+    // TypeScript guard - validateForm ensures these are not null
+    if (!selectedDate || !selectedTime) return;
 
     setLoading(true);
 
@@ -467,13 +525,17 @@ export default function BookingCalendar() {
           <>
             {/* Summary */}
             <div className="mb-6 space-y-3">
-              <div className="flex justify-between py-2 border-b border-[var(--text)]/5 text-sm">
-                <span className="text-[var(--text-muted)]">날짜</span>
-                <span>{selectedDate ? formatKSTDateShort(selectedDate) : '-'}</span>
+              <div className={`flex justify-between py-2 border-b text-sm ${errors.date ? 'border-red-500' : 'border-[var(--text)]/5'}`}>
+                <span className={errors.date ? 'text-red-500' : 'text-[var(--text-muted)]'}>날짜 *</span>
+                <span className={!selectedDate && errors.date ? 'text-red-500' : ''}>
+                  {selectedDate ? formatKSTDateShort(selectedDate) : (errors.date || '-')}
+                </span>
               </div>
-              <div className="flex justify-between py-2 border-b border-[var(--text)]/5 text-sm">
-                <span className="text-[var(--text-muted)]">시간</span>
-                <span>{selectedTime || '-'}</span>
+              <div className={`flex justify-between py-2 border-b text-sm ${errors.time ? 'border-red-500' : 'border-[var(--text)]/5'}`}>
+                <span className={errors.time ? 'text-red-500' : 'text-[var(--text-muted)]'}>시간 *</span>
+                <span className={!selectedTime && errors.time ? 'text-red-500' : ''}>
+                  {selectedTime || (errors.time || '-')}
+                </span>
               </div>
               <div className="flex justify-between py-2 border-b border-[var(--text)]/5 text-sm">
                 <span className="text-[var(--text-muted)]">소요시간</span>
@@ -484,13 +546,18 @@ export default function BookingCalendar() {
             {/* Form */}
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-xs tracking-wider text-[var(--text-muted)] mb-2">
+                <label className={`block text-xs tracking-wider mb-2 ${errors.service ? 'text-red-500' : 'text-[var(--text-muted)]'}`}>
                   상담 유형 *
                 </label>
                 <select
                   value={formData.service}
-                  onChange={(e) => setFormData({ ...formData, service: e.target.value })}
-                  className="w-full px-4 py-3 bg-transparent border border-[var(--text)]/20 focus:border-[var(--text)] focus:outline-none"
+                  onChange={(e) => {
+                    setFormData({ ...formData, service: e.target.value });
+                    if (errors.service) setErrors({ ...errors, service: undefined });
+                  }}
+                  className={`w-full px-4 py-3 bg-transparent border focus:outline-none ${
+                    errors.service ? 'border-red-500 focus:border-red-500' : 'border-[var(--text)]/20 focus:border-[var(--text)]'
+                  }`}
                   required
                 >
                   <option value="">상담 유형을 선택해주세요</option>
@@ -500,45 +567,64 @@ export default function BookingCalendar() {
                     </option>
                   ))}
                 </select>
+                {errors.service && <p className="text-red-500 text-xs mt-1">{errors.service}</p>}
               </div>
 
               <div>
-                <label className="block text-xs tracking-wider text-[var(--text-muted)] mb-2">
+                <label className={`block text-xs tracking-wider mb-2 ${errors.name ? 'text-red-500' : 'text-[var(--text-muted)]'}`}>
                   이름 *
                 </label>
                 <input
                   type="text"
                   value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full px-4 py-3 bg-transparent border border-[var(--text)]/20 focus:border-[var(--text)] focus:outline-none"
+                  onChange={(e) => {
+                    setFormData({ ...formData, name: e.target.value });
+                    if (errors.name) setErrors({ ...errors, name: undefined });
+                  }}
+                  className={`w-full px-4 py-3 bg-transparent border focus:outline-none ${
+                    errors.name ? 'border-red-500 focus:border-red-500' : 'border-[var(--text)]/20 focus:border-[var(--text)]'
+                  }`}
                   required
                 />
+                {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
               </div>
 
               <div>
-                <label className="block text-xs tracking-wider text-[var(--text-muted)] mb-2">
+                <label className={`block text-xs tracking-wider mb-2 ${errors.email ? 'text-red-500' : 'text-[var(--text-muted)]'}`}>
                   이메일 *
                 </label>
                 <input
                   type="email"
                   value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="w-full px-4 py-3 bg-transparent border border-[var(--text)]/20 focus:border-[var(--text)] focus:outline-none"
+                  onChange={(e) => {
+                    setFormData({ ...formData, email: e.target.value });
+                    if (errors.email) setErrors({ ...errors, email: undefined });
+                  }}
+                  className={`w-full px-4 py-3 bg-transparent border focus:outline-none ${
+                    errors.email ? 'border-red-500 focus:border-red-500' : 'border-[var(--text)]/20 focus:border-[var(--text)]'
+                  }`}
                   required
                 />
+                {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
               </div>
 
               <div>
-                <label className="block text-xs tracking-wider text-[var(--text-muted)] mb-2">
+                <label className={`block text-xs tracking-wider mb-2 ${errors.phone ? 'text-red-500' : 'text-[var(--text-muted)]'}`}>
                   연락처 *
                 </label>
                 <input
                   type="tel"
                   value={formData.phone}
-                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                  className="w-full px-4 py-3 bg-transparent border border-[var(--text)]/20 focus:border-[var(--text)] focus:outline-none"
+                  onChange={(e) => {
+                    setFormData({ ...formData, phone: e.target.value });
+                    if (errors.phone) setErrors({ ...errors, phone: undefined });
+                  }}
+                  className={`w-full px-4 py-3 bg-transparent border focus:outline-none ${
+                    errors.phone ? 'border-red-500 focus:border-red-500' : 'border-[var(--text)]/20 focus:border-[var(--text)]'
+                  }`}
                   required
                 />
+                {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone}</p>}
               </div>
 
               <div>
@@ -573,14 +659,18 @@ export default function BookingCalendar() {
                   <input
                     type="checkbox"
                     checked={formData.privacyConsent}
-                    onChange={(e) => setFormData({ ...formData, privacyConsent: e.target.checked })}
-                    className="w-4 h-4 mt-0.5 accent-rose-500"
+                    onChange={(e) => {
+                      setFormData({ ...formData, privacyConsent: e.target.checked });
+                      if (errors.privacyConsent) setErrors({ ...errors, privacyConsent: undefined });
+                    }}
+                    className={`w-4 h-4 mt-0.5 ${errors.privacyConsent ? 'accent-red-500' : 'accent-rose-500'}`}
                     required
                   />
-                  <span className="text-xs text-[var(--text-muted)] leading-relaxed">
+                  <span className={`text-xs leading-relaxed ${errors.privacyConsent ? 'text-red-500' : 'text-[var(--text-muted)]'}`}>
                     개인정보 수집 및 이용에 동의합니다. 수집항목: 이름, 연락처, 이메일, SNS 계정 / 수집목적: 상담 및 예약 진행 / 보유기간: 상담 완료 후 1년
                   </span>
                 </label>
+                {errors.privacyConsent && <p className="text-red-500 text-xs mt-1">{errors.privacyConsent}</p>}
               </div>
 
               <button

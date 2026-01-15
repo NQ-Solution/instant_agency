@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { ArrowLeft, Save, Plus, Trash2, Upload } from 'lucide-react';
+import { ArrowLeft, Save, Plus, Trash2, Upload, Eye, EyeOff } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import type { StudioPageContent } from '@/types';
@@ -26,11 +26,17 @@ const defaultContent: StudioPageContent = {
     description: '촬영 일정과 요청사항을 알려주시면 맞춤 견적을 안내해 드립니다.',
     buttonText: 'Contact Us',
   },
+  sectionVisibility: {
+    hero: true,
+    info: true,
+    cta: true,
+  },
 };
 
 export default function EditStudioPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [content, setContent] = useState<StudioPageContent>(defaultContent);
 
   useEffect(() => {
@@ -70,15 +76,38 @@ export default function EditStudioPage() {
   };
 
   const handleImageUpload = async (file: File, callback: (url: string) => void) => {
+    setUploading(true);
     const formData = new FormData();
     formData.append('file', file);
     formData.append('folder', 'studio');
     try {
+      console.log('Uploading file:', file.name, file.type, file.size);
       const res = await fetch('/api/upload', { method: 'POST', body: formData });
-      const data = await res.json();
-      if (data.success) callback(data.data.url);
+      console.log('Response status:', res.status, res.statusText);
+
+      const text = await res.text();
+      console.log('Response text:', text);
+
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch {
+        alert(`서버 응답 파싱 실패: ${text.substring(0, 100)}`);
+        return;
+      }
+
+      if (data.success) {
+        callback(data.data.url);
+        alert('이미지가 업로드되었습니다.');
+      } else {
+        alert(`업로드 실패: ${data.error || '알 수 없는 오류'}`);
+        console.error('Upload failed:', data);
+      }
     } catch (error) {
+      alert('업로드 중 오류가 발생했습니다. 콘솔을 확인해주세요.');
       console.error('Upload error:', error);
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -102,10 +131,48 @@ export default function EditStudioPage() {
         </div>
       </div>
 
+      {/* Section Visibility Controls */}
+      <div className="border border-[var(--text)]/10 rounded-lg p-4 mb-6">
+        <h3 className="text-sm font-medium mb-3">섹션 표시/숨김 설정</h3>
+        <div className="flex flex-wrap gap-3">
+          {[
+            { id: 'hero' as const, label: 'Hero' },
+            { id: 'info' as const, label: 'Info' },
+            { id: 'cta' as const, label: 'CTA' },
+          ].map((section) => {
+            const isVisible = content.sectionVisibility?.[section.id] !== false;
+            return (
+              <button
+                key={section.id}
+                type="button"
+                onClick={() => setContent({
+                  ...content,
+                  sectionVisibility: {
+                    ...content.sectionVisibility,
+                    [section.id]: !isVisible,
+                  },
+                })}
+                className={`flex items-center gap-2 px-3 py-2 rounded-lg border transition-colors ${
+                  isVisible
+                    ? 'border-green-500/30 bg-green-500/10 text-green-600'
+                    : 'border-red-500/30 bg-red-500/10 text-red-500'
+                }`}
+              >
+                {isVisible ? <Eye size={16} /> : <EyeOff size={16} />}
+                <span className="text-sm">{section.label}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Hero Section */}
-        <div className="border border-[var(--text)]/10 rounded-lg p-6 space-y-4">
-          <h2 className="font-serif text-xl mb-4">Hero Section</h2>
+        <div className={`border border-[var(--text)]/10 rounded-lg p-6 space-y-4 ${content.sectionVisibility?.hero === false ? 'opacity-50' : ''}`}>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="font-serif text-xl">Hero Section</h2>
+            {content.sectionVisibility?.hero === false && <span className="text-xs text-red-500 bg-red-500/10 px-2 py-1 rounded">숨김</span>}
+          </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-xs tracking-wider uppercase text-[var(--text-muted)] mb-2">Tag</label>
@@ -127,15 +194,18 @@ export default function EditStudioPage() {
         </div>
 
         {/* Info Section */}
-        <div className="border border-[var(--text)]/10 rounded-lg p-6 space-y-4">
-          <h2 className="font-serif text-xl mb-4">Info Section</h2>
+        <div className={`border border-[var(--text)]/10 rounded-lg p-6 space-y-4 ${content.sectionVisibility?.info === false ? 'opacity-50' : ''}`}>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="font-serif text-xl">Info Section</h2>
+            {content.sectionVisibility?.info === false && <span className="text-xs text-red-500 bg-red-500/10 px-2 py-1 rounded">숨김</span>}
+          </div>
           <div>
             <label className="block text-xs tracking-wider uppercase text-[var(--text-muted)] mb-2">Image</label>
             <div className="flex gap-2">
               <input type="text" value={content.info.image} onChange={(e) => setContent({ ...content, info: { ...content.info, image: e.target.value } })} className="flex-1 px-4 py-3 bg-transparent border border-[var(--text)]/20 rounded-lg" />
-              <label className="px-4 py-3 border border-[var(--text)]/20 rounded-lg cursor-pointer hover:bg-[var(--text)]/5">
-                <Upload size={16} />
-                <input type="file" accept="image/*" className="hidden" onChange={(e) => {
+              <label className={`px-4 py-3 border border-[var(--text)]/20 rounded-lg cursor-pointer hover:bg-[var(--text)]/5 ${uploading ? 'opacity-50 pointer-events-none' : ''}`}>
+                {uploading ? <div className="animate-spin h-4 w-4 border-2 border-current border-t-transparent rounded-full" /> : <Upload size={16} />}
+                <input type="file" accept="image/*" className="hidden" disabled={uploading} onChange={(e) => {
                   const file = e.target.files?.[0];
                   if (file) handleImageUpload(file, (url) => setContent({ ...content, info: { ...content.info, image: url } }));
                 }} />
@@ -184,8 +254,11 @@ export default function EditStudioPage() {
         </div>
 
         {/* CTA Section */}
-        <div className="border border-[var(--text)]/10 rounded-lg p-6 space-y-4">
-          <h2 className="font-serif text-xl mb-4">CTA Section</h2>
+        <div className={`border border-[var(--text)]/10 rounded-lg p-6 space-y-4 ${content.sectionVisibility?.cta === false ? 'opacity-50' : ''}`}>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="font-serif text-xl">CTA Section</h2>
+            {content.sectionVisibility?.cta === false && <span className="text-xs text-red-500 bg-red-500/10 px-2 py-1 rounded">숨김</span>}
+          </div>
           <div>
             <label className="block text-xs tracking-wider uppercase text-[var(--text-muted)] mb-2">Title</label>
             <input type="text" value={content.cta.title} onChange={(e) => setContent({ ...content, cta: { ...content.cta, title: e.target.value } })} className="w-full px-4 py-3 bg-transparent border border-[var(--text)]/20 rounded-lg" />

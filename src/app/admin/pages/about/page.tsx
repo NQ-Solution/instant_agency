@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { ArrowLeft, Save, Plus, Trash2, Upload } from 'lucide-react';
+import { ArrowLeft, Save, Plus, Trash2, Upload, Eye, EyeOff } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import type { AboutPageContent } from '@/types';
@@ -30,11 +30,19 @@ const defaultContent: AboutPageContent = {
     title: 'Work With Us',
     buttonText: 'Get in Touch',
   },
+  sectionVisibility: {
+    hero: true,
+    story: true,
+    values: true,
+    timeline: true,
+    cta: true,
+  },
 };
 
 export default function EditAboutPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [content, setContent] = useState<AboutPageContent>(defaultContent);
   const [activeTab, setActiveTab] = useState<'hero' | 'story' | 'values' | 'timeline' | 'cta'>('hero');
 
@@ -75,15 +83,38 @@ export default function EditAboutPage() {
   };
 
   const handleImageUpload = async (file: File, callback: (url: string) => void) => {
+    setUploading(true);
     const formData = new FormData();
     formData.append('file', file);
     formData.append('folder', 'about');
     try {
+      console.log('Uploading file:', file.name, file.type, file.size);
       const res = await fetch('/api/upload', { method: 'POST', body: formData });
-      const data = await res.json();
-      if (data.success) callback(data.data.url);
+      console.log('Response status:', res.status, res.statusText);
+
+      const text = await res.text();
+      console.log('Response text:', text);
+
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch {
+        alert(`서버 응답 파싱 실패: ${text.substring(0, 100)}`);
+        return;
+      }
+
+      if (data.success) {
+        callback(data.data.url);
+        alert('이미지가 업로드되었습니다.');
+      } else {
+        alert(`업로드 실패: ${data.error || '알 수 없는 오류'}`);
+        console.error('Upload failed:', data);
+      }
     } catch (error) {
+      alert('업로드 중 오류가 발생했습니다. 콘솔을 확인해주세요.');
       console.error('Upload error:', error);
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -116,17 +147,36 @@ export default function EditAboutPage() {
       </div>
 
       <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
-        {tabs.map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            className={`px-4 py-2 text-sm whitespace-nowrap rounded-lg transition-colors ${
-              activeTab === tab.id ? 'bg-theme-inverse text-theme-inverse' : 'border border-[var(--text)]/20 hover:bg-[var(--text)]/5'
-            }`}
-          >
-            {tab.label}
-          </button>
-        ))}
+        {tabs.map((tab) => {
+          const isVisible = content.sectionVisibility?.[tab.id] !== false;
+          return (
+            <div key={tab.id} className="flex items-center gap-1">
+              <button
+                type="button"
+                onClick={() => setActiveTab(tab.id)}
+                className={`px-4 py-2 text-sm whitespace-nowrap rounded-lg transition-colors ${
+                  activeTab === tab.id ? 'bg-theme-inverse text-theme-inverse' : 'border border-[var(--text)]/20 hover:bg-[var(--text)]/5'
+                } ${!isVisible ? 'opacity-50' : ''}`}
+              >
+                {tab.label}
+              </button>
+              <button
+                type="button"
+                onClick={() => setContent({
+                  ...content,
+                  sectionVisibility: {
+                    ...content.sectionVisibility,
+                    [tab.id]: !isVisible,
+                  },
+                })}
+                className={`p-2 rounded-lg transition-colors ${isVisible ? 'text-green-500 hover:bg-green-500/10' : 'text-red-500 hover:bg-red-500/10'}`}
+                title={isVisible ? '섹션 숨기기' : '섹션 표시하기'}
+              >
+                {isVisible ? <Eye size={16} /> : <EyeOff size={16} />}
+              </button>
+            </div>
+          );
+        })}
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
@@ -159,9 +209,9 @@ export default function EditAboutPage() {
               <label className="block text-xs tracking-wider uppercase text-[var(--text-muted)] mb-2">Image</label>
               <div className="flex gap-2">
                 <input type="text" value={content.story.image} onChange={(e) => setContent({ ...content, story: { ...content.story, image: e.target.value } })} className="flex-1 px-4 py-3 bg-transparent border border-[var(--text)]/20 rounded-lg" />
-                <label className="px-4 py-3 border border-[var(--text)]/20 rounded-lg cursor-pointer hover:bg-[var(--text)]/5">
-                  <Upload size={16} />
-                  <input type="file" accept="image/*" className="hidden" onChange={(e) => {
+                <label className={`px-4 py-3 border border-[var(--text)]/20 rounded-lg cursor-pointer hover:bg-[var(--text)]/5 ${uploading ? 'opacity-50 pointer-events-none' : ''}`}>
+                  {uploading ? <div className="animate-spin h-4 w-4 border-2 border-current border-t-transparent rounded-full" /> : <Upload size={16} />}
+                  <input type="file" accept="image/*" className="hidden" disabled={uploading} onChange={(e) => {
                     const file = e.target.files?.[0];
                     if (file) handleImageUpload(file, (url) => setContent({ ...content, story: { ...content.story, image: url } }));
                   }} />

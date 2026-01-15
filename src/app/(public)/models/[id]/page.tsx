@@ -129,13 +129,13 @@ export default function ModelDetailPage({
           </h1>
 
           {/* Stats */}
-          <div className="grid grid-cols-3 sm:grid-cols-4 gap-6 mb-8">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 sm:gap-6 mb-8">
             {stats.map((stat) => (
               <div key={stat.label}>
-                <p className="text-xs tracking-wider uppercase text-[var(--text-muted)] mb-1">
+                <p className="text-[0.65rem] sm:text-xs tracking-wider uppercase text-[var(--text-muted)] mb-1">
                   {stat.label}
                 </p>
-                <p className="font-serif text-xl">{stat.value}</p>
+                <p className="font-serif text-lg sm:text-xl">{stat.value}</p>
               </div>
             ))}
           </div>
