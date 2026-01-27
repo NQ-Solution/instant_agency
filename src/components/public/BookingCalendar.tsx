@@ -49,6 +49,8 @@ interface BookingFormData {
   phone: string;
   instagram: string;
   tiktok: string;
+  kakaoId: string;
+  isUniversityStudent: boolean;
   privacyConsent: boolean;
 }
 
@@ -83,6 +85,8 @@ export default function BookingCalendar() {
     phone: '',
     instagram: '',
     tiktok: '',
+    kakaoId: '',
+    isUniversityStudent: false,
     privacyConsent: false,
   });
   const [errors, setErrors] = useState<ValidationErrors>({});
@@ -325,6 +329,8 @@ export default function BookingCalendar() {
             instagram: formData.instagram || undefined,
             tiktok: formData.tiktok || undefined,
           },
+          kakaoId: formData.kakaoId || undefined,
+          isUniversityStudent: formData.isUniversityStudent,
         }),
       });
 
@@ -343,7 +349,7 @@ export default function BookingCalendar() {
           setSuccess(false);
           setSelectedDate(null);
           setSelectedTime(null);
-          setFormData({ service: '', name: '', email: '', phone: '', instagram: '', tiktok: '', privacyConsent: false });
+          setFormData({ service: '', name: '', email: '', phone: '', instagram: '', tiktok: '', kakaoId: '', isUniversityStudent: false, privacyConsent: false });
         }, 3000);
       } else {
         alert(data.error || 'Failed to create booking');
@@ -651,6 +657,31 @@ export default function BookingCalendar() {
                   placeholder="@username"
                   className="w-full px-4 py-3 bg-transparent border border-[var(--text)]/20 focus:border-[var(--text)] focus:outline-none"
                 />
+              </div>
+
+              <div>
+                <label className="block text-xs tracking-wider text-[var(--text-muted)] mb-2">
+                  카카오톡 ID
+                </label>
+                <input
+                  type="text"
+                  value={formData.kakaoId}
+                  onChange={(e) => setFormData({ ...formData, kakaoId: e.target.value })}
+                  placeholder="카카오톡 아이디"
+                  className="w-full px-4 py-3 bg-transparent border border-[var(--text)]/20 focus:border-[var(--text)] focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="flex items-center gap-3 cursor-pointer py-3">
+                  <input
+                    type="checkbox"
+                    checked={formData.isUniversityStudent}
+                    onChange={(e) => setFormData({ ...formData, isUniversityStudent: e.target.checked })}
+                    className="w-4 h-4 accent-rose-500"
+                  />
+                  <span className="text-sm">대학생입니다</span>
+                </label>
               </div>
 
               {/* Privacy Consent */}

@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
   ArrowLeft, Calendar, Clock, User, Mail, Phone, Instagram,
-  Building, FileText, Check, X, Trash2, Edit
+  Building, FileText, Check, X, Trash2, Edit, MessageCircle, GraduationCap
 } from 'lucide-react';
 import type { Booking } from '@/types';
 import { formatKSTDateKorean, formatDateToKST } from '@/lib/kst';
@@ -296,6 +296,28 @@ export default function BookingDetailPage() {
                     >
                       {booking.customer.tiktok}
                     </a>
+                  </div>
+                </div>
+              )}
+
+              {booking.kakaoId && (
+                <div className="flex items-center gap-4 p-4 bg-[var(--text)]/5 rounded-lg">
+                  <MessageCircle className="text-[var(--text-muted)]" size={20} />
+                  <div>
+                    <p className="text-xs text-[var(--text-muted)] mb-1">카카오톡 ID</p>
+                    <p className="font-medium">{booking.kakaoId}</p>
+                  </div>
+                </div>
+              )}
+
+              {booking.isUniversityStudent !== undefined && (
+                <div className="flex items-center gap-4 p-4 bg-[var(--text)]/5 rounded-lg">
+                  <GraduationCap className="text-[var(--text-muted)]" size={20} />
+                  <div>
+                    <p className="text-xs text-[var(--text-muted)] mb-1">대학생 여부</p>
+                    <p className={`font-medium ${booking.isUniversityStudent ? 'text-blue-500' : ''}`}>
+                      {booking.isUniversityStudent ? '대학생' : '해당 없음'}
+                    </p>
                   </div>
                 </div>
               )}

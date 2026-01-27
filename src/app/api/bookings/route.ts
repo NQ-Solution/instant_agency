@@ -106,6 +106,8 @@ export async function POST(request: NextRequest) {
         endTime: data.endTime,
         service: data.service,
         customer: data.customer,
+        kakaoId: data.kakaoId,
+        isUniversityStudent: data.isUniversityStudent,
         status: 'pending',
         notes: data.notes,
       },

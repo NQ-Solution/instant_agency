@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import PageGuard from '@/components/public/PageGuard';
 import type { Model, ModelsPageContent } from '@/types';
 
@@ -47,11 +48,19 @@ const YouTubeIcon = () => (
 );
 
 export default function ModelsPage() {
+  const router = useRouter();
   const [content, setContent] = useState<ModelsPageContent>(defaultContent);
   const [models, setModels] = useState<Model[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState('all');
   const [hoveredModel, setHoveredModel] = useState<Model | null>(null);
+  const [touchedModelId, setTouchedModelId] = useState<string | null>(null);
+  const [isTouchDevice, setIsTouchDevice] = useState(false);
+
+  useEffect(() => {
+    // 터치 디바이스 감지
+    setIsTouchDevice('ontouchstart' in window || navigator.maxTouchPoints > 0);
+  }, []);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -80,6 +89,49 @@ export default function ModelsPage() {
 
     fetchData();
   }, []);
+
+  // 외부 클릭 시 터치 상태 초기화
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent | TouchEvent) => {
+      const target = e.target as HTMLElement;
+      if (!target.closest('.model-card')) {
+        setTouchedModelId(null);
+      }
+    };
+
+    document.addEventListener('click', handleClickOutside);
+    document.addEventListener('touchstart', handleClickOutside);
+
+    return () => {
+      document.removeEventListener('click', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+    };
+  }, []);
+
+  const handleModelClick = useCallback((e: React.MouseEvent | React.TouchEvent, model: Model) => {
+    // 데스크톱이면 기본 동작 (바로 이동)
+    if (!isTouchDevice) {
+      return;
+    }
+
+    // SNS 링크 클릭이면 무시
+    const target = e.target as HTMLElement;
+    if (target.closest('a[target="_blank"]')) {
+      return;
+    }
+
+    e.preventDefault();
+    e.stopPropagation();
+
+    // 이미 선택된 모델을 다시 터치하면 상세 페이지로 이동
+    if (touchedModelId === model.id) {
+      router.push(`/models/${model.slug}`);
+      return;
+    }
+
+    // 첫 번째 터치: SNS 오버레이 표시
+    setTouchedModelId(model.id);
+  }, [isTouchDevice, touchedModelId, router]);
 
   const filteredModels = models.filter(
     (model) => activeCategory === 'all' || model.category === activeCategory
@@ -148,34 +200,56 @@ export default function ModelsPage() {
               {filteredModels.map((model) => {
                 const social = model.social as { instagram?: string; tiktok?: string; youtube?: string } | undefined;
                 const hasSocial = social?.instagram || social?.tiktok || social?.youtube;
+                const isActive = isTouchDevice ? touchedModelId === model.id : false;
 
                 return (
                   <div
                     key={model.id}
-                    className="group block relative aspect-[3/4] overflow-hidden"
-                    onMouseEnter={() => setHoveredModel(model)}
-                    onMouseLeave={() => setHoveredModel(null)}
+                    className={`model-card group block relative aspect-[3/4] overflow-hidden cursor-pointer ${isActive ? 'is-active' : ''}`}
+                    onMouseEnter={() => !isTouchDevice && setHoveredModel(model)}
+                    onMouseLeave={() => !isTouchDevice && setHoveredModel(null)}
+                    onClick={(e) => handleModelClick(e, model)}
+                    onTouchEnd={(e) => handleModelClick(e, model)}
                   >
-                    <Link href={`/models/${model.slug}`} className="block w-full h-full">
-                      {model.profileImage ? (
-                        <Image
-                          src={model.profileImage}
-                          alt={model.name}
-                          fill
-                          className="object-cover grayscale group-hover:grayscale-0 group-hover:scale-105 transition-all duration-500"
-                        />
-                      ) : (
-                        <div className="absolute inset-0 bg-[var(--text)]/10" />
-                      )}
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                    </Link>
+                    {/* 데스크톱: Link로 이동 / 모바일: onClick으로 처리 */}
+                    {!isTouchDevice ? (
+                      <Link href={`/models/${model.slug}`} className="block w-full h-full">
+                        {model.profileImage ? (
+                          <Image
+                            src={model.profileImage}
+                            alt={model.name}
+                            fill
+                            className="object-cover grayscale group-hover:grayscale-0 group-hover:scale-105 transition-all duration-500"
+                          />
+                        ) : (
+                          <div className="absolute inset-0 bg-[var(--text)]/10" />
+                        )}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                      </Link>
+                    ) : (
+                      <>
+                        {model.profileImage ? (
+                          <Image
+                            src={model.profileImage}
+                            alt={model.name}
+                            fill
+                            className={`object-cover transition-all duration-500 ${isActive ? 'grayscale-0 scale-105' : 'grayscale'}`}
+                          />
+                        ) : (
+                          <div className="absolute inset-0 bg-[var(--text)]/10" />
+                        )}
+                        <div className={`absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent transition-opacity duration-300 ${isActive ? 'opacity-100' : 'opacity-0'}`} />
+                      </>
+                    )}
 
-                    {/* Hover Info */}
-                    <div className="absolute bottom-0 left-0 right-0 p-4 text-white translate-y-full group-hover:translate-y-0 transition-transform duration-300 pointer-events-none group-hover:pointer-events-auto">
+                    {/* Hover/Touch Info */}
+                    <div className={`absolute bottom-0 left-0 right-0 p-4 text-white transition-transform duration-300 pointer-events-none ${
+                      isTouchDevice
+                        ? (isActive ? 'translate-y-0 pointer-events-auto' : 'translate-y-full')
+                        : 'translate-y-full group-hover:translate-y-0 group-hover:pointer-events-auto'
+                    }`}>
                       <div className="flex items-center gap-2 mb-1">
-                        <Link href={`/models/${model.slug}`}>
-                          <h3 className="text-lg md:text-xl hover:underline">{model.name}</h3>
-                        </Link>
+                        <h3 className="text-lg md:text-xl">{model.name}</h3>
 
                         {/* Social Links */}
                         {hasSocial && (
@@ -219,6 +293,12 @@ export default function ModelsPage() {
                       <p className="text-xs tracking-wider uppercase opacity-80">
                         {(model.stats as { height?: string })?.height || ''}cm · {model.location}
                       </p>
+                      {/* 모바일: 탭 안내 */}
+                      {isTouchDevice && isActive && (
+                        <p className="text-[10px] tracking-wider uppercase opacity-60 mt-2">
+                          한번 더 터치하면 프로필 보기
+                        </p>
+                      )}
                     </div>
                   </div>
                 );

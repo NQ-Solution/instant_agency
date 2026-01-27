@@ -56,16 +56,18 @@ model Creator {
 
 // Booking (예약)
 model Booking {
-  id        String   @id @default(cuid())
-  date      DateTime
-  time      String
-  endTime   String?
-  service   String
-  customer  Json     // { name, email, phone, company? }
-  status    String   @default("pending") // 'pending' | 'confirmed' | 'cancelled'
-  notes     String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id                  String   @id @default(cuid())
+  date                DateTime
+  time                String
+  endTime             String?
+  service             String
+  customer            Json     // { name, email, phone, company? }
+  kakaoId             String?  // 카카오톡 ID
+  isUniversityStudent Boolean? // 대학생 여부
+  status              String   @default("pending") // 'pending' | 'confirmed' | 'cancelled'
+  notes               String?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
 
   @@index([date, status])
 }

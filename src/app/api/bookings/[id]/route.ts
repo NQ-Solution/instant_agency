@@ -51,6 +51,8 @@ export async function PUT(
         endTime: data.endTime,
         service: data.service,
         customer: data.customer,
+        kakaoId: data.kakaoId,
+        isUniversityStudent: data.isUniversityStudent,
         status: data.status,
         notes: data.notes,
       },

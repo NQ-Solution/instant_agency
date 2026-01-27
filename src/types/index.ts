@@ -149,6 +149,8 @@ export interface Booking {
   endTime?: string;
   service: string;
   customer: BookingCustomer;
+  kakaoId?: string;              // 카카오톡 ID
+  isUniversityStudent?: boolean; // 대학생 여부
   status: 'pending' | 'confirmed' | 'cancelled';
   notes?: string;
   createdAt?: Date;
