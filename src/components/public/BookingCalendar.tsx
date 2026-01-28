@@ -38,6 +38,7 @@ const weekdays = ['일', '월', '화', '수', '목', '금', '토'];
 interface BookedSlot {
   date: string;
   time: string;
+  endTime?: string;
   customerName?: string;
   status?: string;
 }
@@ -122,13 +123,14 @@ export default function BookingCalendar() {
         // Filter out cancelled bookings and map to slots
         const slots = data.data
           .filter((b: { status: string }) => b.status !== 'cancelled')
-          .map((b: { date: string; time: string; customer: { name: string }; status: string }) => {
+          .map((b: { date: string; time: string; endTime?: string; customer: { name: string }; status: string }) => {
             // UTC에서 KST로 변환하여 날짜 문자열 생성
             const dateObj = new Date(b.date);
             const kstDateStr = formatDateToKST(dateObj);
             return {
               date: kstDateStr,
               time: b.time,
+              endTime: b.endTime,
               customerName: b.customer?.name,
               status: b.status,
             };
@@ -187,12 +189,21 @@ export default function BookingCalendar() {
       const isWeekdayBlocked = bookingSettings.blockedWeekdays.includes(dayOfWeek);
       const isBlocked = isDateBlocked || isWeekdayBlocked;
 
-      // Get booked times for this date
-      const bookedTimes = bookedSlots
-        .filter(slot => slot.date === dateStr)
-        .map(slot => slot.time);
+      // Get booked slots for this date
+      const dateBookedSlots = bookedSlots.filter(slot => slot.date === dateStr);
 
-      const availableCount = bookingSettings.availableTimes.length - bookedTimes.length;
+      // Count available times considering overlapping bookings
+      const availableCount = bookingSettings.availableTimes.filter(time => {
+        const slotStart = timeToMinutes(time);
+        const slotEnd = slotStart + bookingSettings.slotDuration;
+        // Check if this time slot overlaps with any booked slot
+        const isOverlapping = dateBookedSlots.some(slot => {
+          const bookedStart = timeToMinutes(slot.time);
+          const bookedEnd = slot.endTime ? timeToMinutes(slot.endTime) : bookedStart + 60;
+          return slotStart < bookedEnd && bookedStart < slotEnd;
+        });
+        return !isOverlapping;
+      }).length;
 
       days.push({
         day,
@@ -236,7 +247,17 @@ export default function BookingCalendar() {
   };
 
   const isTimeBooked = (time: string) => {
-    return bookedTimesForSelectedDate.some(slot => slot.time === time);
+    // Check if this time slot overlaps with any booked slot
+    const slotStart = timeToMinutes(time);
+    const slotEnd = slotStart + bookingSettings.slotDuration;
+
+    return bookedTimesForSelectedDate.some(slot => {
+      const bookedStart = timeToMinutes(slot.time);
+      // If endTime exists, use it; otherwise assume 60 min duration
+      const bookedEnd = slot.endTime ? timeToMinutes(slot.endTime) : bookedStart + 60;
+      // Two ranges overlap if: start1 < end2 AND start2 < end1
+      return slotStart < bookedEnd && bookedStart < slotEnd;
+    });
   };
 
   // KST 기준으로 시간이 지났는지 확인 (오늘 날짜인 경우)
@@ -314,13 +335,20 @@ export default function BookingCalendar() {
     try {
       // Use local date string to avoid timezone issues
       const dateStr = formatDate(selectedDate);
+      // Calculate endTime based on slotDuration
+      const [startHour, startMin] = selectedTime.split(':').map(Number);
+      const endMinutes = startHour * 60 + startMin + bookingSettings.slotDuration;
+      const endHour = Math.floor(endMinutes / 60);
+      const endMin = endMinutes % 60;
+      const endTime = `${String(endHour).padStart(2, '0')}:${String(endMin).padStart(2, '0')}`;
+
       const res = await fetch('/api/bookings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           date: dateStr,
           time: selectedTime,
-          endTime: `${parseInt(selectedTime.split(':')[0]) + 1}:00`,
+          endTime,
           service: formData.service,
           customer: {
             name: formData.name,
@@ -545,7 +573,11 @@ export default function BookingCalendar() {
               </div>
               <div className="flex justify-between py-2 border-b border-[var(--text)]/5 text-sm">
                 <span className="text-[var(--text-muted)]">소요시간</span>
-                <span>1시간</span>
+                <span>
+                  {bookingSettings.slotDuration >= 60
+                    ? `${Math.floor(bookingSettings.slotDuration / 60)}시간${bookingSettings.slotDuration % 60 > 0 ? ` ${bookingSettings.slotDuration % 60}분` : ''}`
+                    : `${bookingSettings.slotDuration}분`}
+                </span>
               </div>
             </div>
 
