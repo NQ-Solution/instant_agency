@@ -521,7 +521,14 @@ export default function HomePage() {
                     className="object-cover grayscale"
                   />
                 ) : (
-                  <div className="absolute inset-0 bg-[var(--text)]/10" />
+                  <div className="absolute inset-0 bg-gradient-to-br from-[var(--text)]/5 via-[var(--text)]/10 to-[var(--text)]/20 flex items-center justify-center">
+                    <img
+                      src="/logo.png"
+                      alt="Instant Agency"
+                      className="w-32 h-32 md:w-48 md:h-48 opacity-30"
+                      style={{ filter: 'var(--logo-filter, none)' }}
+                    />
+                  </div>
                 )}
               </div>
               {content.about.stats.length > 0 && (
