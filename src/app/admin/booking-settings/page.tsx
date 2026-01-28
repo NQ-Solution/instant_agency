@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { Save, Plus, ChevronLeft, ChevronRight, Calendar, Clock, X, AlertTriangle } from 'lucide-react';
+import { Save, Plus, ChevronLeft, ChevronRight, Calendar, Clock, X, AlertTriangle, Edit2, Trash2 } from 'lucide-react';
 import type { BookingSettings, Booking } from '@/types';
 import { getKSTNow, formatDateToKST } from '@/lib/kst';
 
@@ -35,6 +35,8 @@ export default function BookingSettingsPage() {
     slotDuration: 60,
   });
   const [newTime, setNewTime] = useState('');
+  const [editingTime, setEditingTime] = useState<string | null>(null);
+  const [editTimeValue, setEditTimeValue] = useState('');
   const [bookings, setBookings] = useState<Booking[]>([]);
 
   useEffect(() => {
@@ -209,6 +211,36 @@ export default function BookingSettingsPage() {
       availableTimes: settings.availableTimes.filter(t => t !== time),
     });
   };
+
+  const startEditTime = (time: string) => {
+    setEditingTime(time);
+    setEditTimeValue(time);
+  };
+
+  const saveEditTime = () => {
+    if (editingTime && editTimeValue && editTimeValue !== editingTime) {
+      if (settings.availableTimes.includes(editTimeValue)) {
+        alert('이미 존재하는 시간입니다.');
+        return;
+      }
+      setSettings({
+        ...settings,
+        availableTimes: settings.availableTimes
+          .map(t => t === editingTime ? editTimeValue : t)
+          .sort(),
+      });
+    }
+    setEditingTime(null);
+    setEditTimeValue('');
+  };
+
+  const cancelEditTime = () => {
+    setEditingTime(null);
+    setEditTimeValue('');
+  };
+
+  // 기본 시간인지 확인 (기본 시간이 아닌 것은 커스텀)
+  const isCustomTime = (time: string) => !allTimes.includes(time);
 
   const toggleDefaultTime = (time: string) => {
     if (settings.availableTimes.includes(time)) {
@@ -432,13 +464,82 @@ export default function BookingSettingsPage() {
               </div>
             </div>
 
-            {/* Summary */}
+            {/* Selected Times Management */}
             <div className="mt-4 pt-4 border-t border-[var(--text)]/10">
-              <p className="text-xs text-[var(--text-muted)]">
-                선택된 시간: <span className="text-green-600 font-medium">{settings.availableTimes.length}개</span>
-                {settings.availableTimes.length > 0 && (
-                  <span className="ml-2">({settings.availableTimes.join(', ')})</span>
-                )}
+              <div className="flex items-center justify-between mb-3">
+                <p className="text-xs tracking-wider uppercase text-[var(--text-muted)]">
+                  선택된 시간 ({settings.availableTimes.length}개)
+                </p>
+              </div>
+              {settings.availableTimes.length > 0 ? (
+                <div className="flex flex-wrap gap-2">
+                  {settings.availableTimes.map((time) => (
+                    <div
+                      key={time}
+                      className={`flex items-center gap-1 px-3 py-1.5 rounded text-sm ${
+                        isCustomTime(time)
+                          ? 'bg-purple-500/20 text-purple-600 border border-purple-500/30'
+                          : 'bg-green-500/10 text-green-600 border border-green-500/30'
+                      }`}
+                    >
+                      {editingTime === time ? (
+                        <>
+                          <input
+                            type="time"
+                            value={editTimeValue}
+                            onChange={(e) => setEditTimeValue(e.target.value)}
+                            className="w-24 px-1 py-0.5 bg-transparent border border-current rounded text-xs"
+                            autoFocus
+                          />
+                          <button
+                            type="button"
+                            onClick={saveEditTime}
+                            className="p-0.5 hover:opacity-70"
+                            title="저장"
+                          >
+                            <Save size={12} />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={cancelEditTime}
+                            className="p-0.5 hover:opacity-70"
+                            title="취소"
+                          >
+                            <X size={12} />
+                          </button>
+                        </>
+                      ) : (
+                        <>
+                          <span className="font-medium">{time}</span>
+                          {isCustomTime(time) && (
+                            <span className="text-[10px] opacity-70">(커스텀)</span>
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => startEditTime(time)}
+                            className="p-0.5 hover:opacity-70 ml-1"
+                            title="수정"
+                          >
+                            <Edit2 size={12} />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => removeTime(time)}
+                            className="p-0.5 hover:text-red-500"
+                            title="삭제"
+                          >
+                            <Trash2 size={12} />
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-[var(--text-muted)]">선택된 시간이 없습니다</p>
+              )}
+              <p className="text-[10px] text-[var(--text-muted)] mt-2">
+                💡 <span className="text-green-600">초록색</span>: 기본 시간 / <span className="text-purple-600">보라색</span>: 커스텀 시간
               </p>
             </div>
           </section>
