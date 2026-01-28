@@ -39,6 +39,16 @@ export default function BookingSettingsPage() {
   const [editTimeValue, setEditTimeValue] = useState('');
   const [bookings, setBookings] = useState<Booking[]>([]);
 
+  // 자동 시간대 생성 설정
+  const [timeMode, setTimeMode] = useState<'manual' | 'auto'>('manual');
+  const [autoSettings, setAutoSettings] = useState({
+    startTime: '09:00',
+    endTime: '18:00',
+    breakStart: '12:00',
+    breakEnd: '13:00',
+    hasBreak: true,
+  });
+
   useEffect(() => {
     fetchSettings();
     fetchBookings();
@@ -242,6 +252,61 @@ export default function BookingSettingsPage() {
   // 기본 시간인지 확인 (기본 시간이 아닌 것은 커스텀)
   const isCustomTime = (time: string) => !allTimes.includes(time);
 
+  // 시간을 분으로 변환
+  const timeToMinutes = (time: string) => {
+    const [h, m] = time.split(':').map(Number);
+    return h * 60 + m;
+  };
+
+  // 분을 시간 문자열로 변환
+  const minutesToTime = (mins: number) => {
+    const h = Math.floor(mins / 60);
+    const m = mins % 60;
+    return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+  };
+
+  // 자동 시간대 생성
+  const generateAutoSlots = () => {
+    const slots: string[] = [];
+    const startMins = timeToMinutes(autoSettings.startTime);
+    const endMins = timeToMinutes(autoSettings.endTime);
+    const breakStartMins = autoSettings.hasBreak ? timeToMinutes(autoSettings.breakStart) : -1;
+    const breakEndMins = autoSettings.hasBreak ? timeToMinutes(autoSettings.breakEnd) : -1;
+    const duration = settings.slotDuration;
+
+    let currentMins = startMins;
+    while (currentMins + duration <= endMins) {
+      const slotEnd = currentMins + duration;
+
+      // 휴식 시간 체크
+      if (autoSettings.hasBreak) {
+        // 슬롯이 휴식 시간과 겹치는지 확인
+        if (currentMins < breakEndMins && slotEnd > breakStartMins) {
+          // 휴식 시간 후로 이동
+          currentMins = breakEndMins;
+          continue;
+        }
+      }
+
+      slots.push(minutesToTime(currentMins));
+      currentMins += duration;
+    }
+
+    return slots;
+  };
+
+  // 자동 생성된 슬롯 적용
+  const applyAutoSlots = () => {
+    const slots = generateAutoSlots();
+    setSettings({
+      ...settings,
+      availableTimes: slots,
+    });
+  };
+
+  // 미리보기용 슬롯
+  const previewSlots = timeMode === 'auto' ? generateAutoSlots() : [];
+
   const toggleDefaultTime = (time: string) => {
     if (settings.availableTimes.includes(time)) {
       removeTime(time);
@@ -314,26 +379,151 @@ export default function BookingSettingsPage() {
                 <Clock size={20} />
                 <h2 className="font-serif text-xl">예약 가능 시간 (KST)</h2>
               </div>
-              <div className="flex gap-2">
+            </div>
+
+            {/* 모드 선택 토글 */}
+            <div className="flex gap-2 mb-4">
+              <button
+                type="button"
+                onClick={() => setTimeMode('manual')}
+                className={`flex-1 py-2 text-sm rounded transition-colors ${
+                  timeMode === 'manual'
+                    ? 'bg-[var(--text)] text-[var(--bg)]'
+                    : 'border border-[var(--text)]/20 hover:border-[var(--text)]/50'
+                }`}
+              >
+                수동 선택
+              </button>
+              <button
+                type="button"
+                onClick={() => setTimeMode('auto')}
+                className={`flex-1 py-2 text-sm rounded transition-colors ${
+                  timeMode === 'auto'
+                    ? 'bg-[var(--text)] text-[var(--bg)]'
+                    : 'border border-[var(--text)]/20 hover:border-[var(--text)]/50'
+                }`}
+              >
+                자동 생성
+              </button>
+            </div>
+
+            {/* 자동 생성 모드 */}
+            {timeMode === 'auto' && (
+              <div className="mb-6 p-4 bg-blue-500/5 border border-blue-500/20 rounded-lg">
+                <p className="text-sm text-blue-600 mb-4">
+                  미팅 시간({settings.slotDuration}분)에 맞춰 연속 예약 가능한 시간대를 자동 생성합니다
+                </p>
+
+                <div className="grid grid-cols-2 gap-4 mb-4">
+                  <div>
+                    <label className="block text-xs text-[var(--text-muted)] mb-1">시작 시간</label>
+                    <input
+                      type="time"
+                      value={autoSettings.startTime}
+                      onChange={(e) => setAutoSettings({ ...autoSettings, startTime: e.target.value })}
+                      className="w-full px-3 py-2 bg-transparent border border-[var(--text)]/20 rounded focus:outline-none focus:border-blue-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-[var(--text-muted)] mb-1">종료 시간</label>
+                    <input
+                      type="time"
+                      value={autoSettings.endTime}
+                      onChange={(e) => setAutoSettings({ ...autoSettings, endTime: e.target.value })}
+                      className="w-full px-3 py-2 bg-transparent border border-[var(--text)]/20 rounded focus:outline-none focus:border-blue-500"
+                    />
+                  </div>
+                </div>
+
+                <div className="mb-4">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={autoSettings.hasBreak}
+                      onChange={(e) => setAutoSettings({ ...autoSettings, hasBreak: e.target.checked })}
+                      className="w-4 h-4"
+                    />
+                    <span className="text-sm">점심 휴식 시간 설정</span>
+                  </label>
+                </div>
+
+                {autoSettings.hasBreak && (
+                  <div className="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                      <label className="block text-xs text-[var(--text-muted)] mb-1">휴식 시작</label>
+                      <input
+                        type="time"
+                        value={autoSettings.breakStart}
+                        onChange={(e) => setAutoSettings({ ...autoSettings, breakStart: e.target.value })}
+                        className="w-full px-3 py-2 bg-transparent border border-[var(--text)]/20 rounded focus:outline-none focus:border-blue-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs text-[var(--text-muted)] mb-1">휴식 종료</label>
+                      <input
+                        type="time"
+                        value={autoSettings.breakEnd}
+                        onChange={(e) => setAutoSettings({ ...autoSettings, breakEnd: e.target.value })}
+                        className="w-full px-3 py-2 bg-transparent border border-[var(--text)]/20 rounded focus:outline-none focus:border-blue-500"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* 미리보기 */}
+                <div className="mb-4">
+                  <p className="text-xs text-[var(--text-muted)] mb-2">생성될 시간대 미리보기 ({previewSlots.length}개)</p>
+                  <div className="flex flex-wrap gap-2">
+                    {previewSlots.map((time) => {
+                      const endMins = timeToMinutes(time) + settings.slotDuration;
+                      const endTime = minutesToTime(endMins);
+                      return (
+                        <span
+                          key={time}
+                          className="px-2 py-1 bg-blue-500/10 text-blue-600 rounded text-xs"
+                        >
+                          {time} - {endTime}
+                        </span>
+                      );
+                    })}
+                    {previewSlots.length === 0 && (
+                      <span className="text-sm text-[var(--text-muted)]">설정을 조정하세요</span>
+                    )}
+                  </div>
+                </div>
+
                 <button
                   type="button"
-                  onClick={selectAllTimes}
-                  className="px-3 py-1 text-xs border border-green-500 text-green-600 rounded hover:bg-green-500/10"
+                  onClick={applyAutoSlots}
+                  className="w-full py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
                 >
-                  전체 선택
-                </button>
-                <button
-                  type="button"
-                  onClick={clearAllTimes}
-                  className="px-3 py-1 text-xs border border-red-500 text-red-600 rounded hover:bg-red-500/10"
-                >
-                  전체 해제
+                  이 시간대로 적용하기
                 </button>
               </div>
-            </div>
-            <p className="text-sm text-[var(--text-muted)] mb-6">
-              클릭하여 예약 가능한 시간대를 선택하세요 (한국 시간 기준)
-            </p>
+            )}
+
+            {/* 수동 선택 모드 */}
+            {timeMode === 'manual' && (
+              <>
+                <div className="flex justify-end gap-2 mb-4">
+                  <button
+                    type="button"
+                    onClick={selectAllTimes}
+                    className="px-3 py-1 text-xs border border-green-500 text-green-600 rounded hover:bg-green-500/10"
+                  >
+                    전체 선택
+                  </button>
+                  <button
+                    type="button"
+                    onClick={clearAllTimes}
+                    className="px-3 py-1 text-xs border border-red-500 text-red-600 rounded hover:bg-red-500/10"
+                  >
+                    전체 해제
+                  </button>
+                </div>
+                <p className="text-sm text-[var(--text-muted)] mb-6">
+                  클릭하여 예약 가능한 시간대를 선택하세요 (한국 시간 기준)
+                </p>
 
             {/* Morning times */}
             <div className="mb-4">
@@ -463,6 +653,8 @@ export default function BookingSettingsPage() {
                 </button>
               </div>
             </div>
+              </>
+            )}
 
             {/* Selected Times Management */}
             <div className="mt-4 pt-4 border-t border-[var(--text)]/10">
