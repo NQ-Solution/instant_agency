@@ -1,9 +1,9 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { Save, Plus, ChevronLeft, ChevronRight, Calendar, Clock, X } from 'lucide-react';
-import type { BookingSettings } from '@/types';
-import { getKSTNow } from '@/lib/kst';
+import { Save, Plus, ChevronLeft, ChevronRight, Calendar, Clock, X, AlertTriangle } from 'lucide-react';
+import type { BookingSettings, Booking } from '@/types';
+import { getKSTNow, formatDateToKST } from '@/lib/kst';
 
 const months = [
   '1월', '2월', '3월', '4월', '5월', '6월',
@@ -35,10 +35,32 @@ export default function BookingSettingsPage() {
     slotDuration: 60,
   });
   const [newTime, setNewTime] = useState('');
+  const [bookings, setBookings] = useState<Booking[]>([]);
 
   useEffect(() => {
     fetchSettings();
+    fetchBookings();
   }, []);
+
+  const fetchBookings = async () => {
+    try {
+      const res = await fetch('/api/bookings');
+      const data = await res.json();
+      if (data.success) {
+        setBookings(data.data);
+      }
+    } catch (error) {
+      console.error('Error fetching bookings:', error);
+    }
+  };
+
+  // 특정 날짜에 예약이 있는지 확인
+  const getBookingsForDate = (dateStr: string) => {
+    return bookings.filter((b) => {
+      const bookingDate = formatDateToKST(new Date(b.date));
+      return bookingDate === dateStr && b.status !== 'cancelled';
+    });
+  };
 
   const fetchSettings = async () => {
     try {
@@ -101,10 +123,11 @@ export default function BookingSettingsPage() {
       isPast: boolean;
       isBlocked: boolean;
       isWeekdayBlocked: boolean;
+      bookingsCount: number;
     }> = [];
 
     for (let i = 0; i < firstDay; i++) {
-      days.push({ day: null, date: null, dateStr: '', isPast: false, isBlocked: false, isWeekdayBlocked: false });
+      days.push({ day: null, date: null, dateStr: '', isPast: false, isBlocked: false, isWeekdayBlocked: false, bookingsCount: 0 });
     }
 
     for (let day = 1; day <= daysInMonth; day++) {
@@ -114,6 +137,7 @@ export default function BookingSettingsPage() {
       const isPast = date < today;
       const isBlocked = settings.blockedDates.includes(dateStr);
       const isWeekdayBlocked = settings.blockedWeekdays.includes(dayOfWeek);
+      const bookingsCount = getBookingsForDate(dateStr).length;
 
       days.push({
         day,
@@ -122,22 +146,31 @@ export default function BookingSettingsPage() {
         isPast,
         isBlocked,
         isWeekdayBlocked,
+        bookingsCount,
       });
     }
 
     return days;
-  }, [year, month, settings.blockedDates, settings.blockedWeekdays]);
+  }, [year, month, settings.blockedDates, settings.blockedWeekdays, bookings]);
 
   const toggleBlockedDate = (dateStr: string) => {
     if (!dateStr) return;
 
     const isBlocked = settings.blockedDates.includes(dateStr);
     if (isBlocked) {
+      // 차단 해제
       setSettings({
         ...settings,
         blockedDates: settings.blockedDates.filter(d => d !== dateStr),
       });
     } else {
+      // 차단하려는 경우, 해당 날짜에 예약이 있는지 확인
+      const dateBookings = getBookingsForDate(dateStr);
+      if (dateBookings.length > 0) {
+        const bookingNames = dateBookings.map(b => `${b.customer.name} (${b.time})`).join(', ');
+        alert(`해당 날짜에 ${dateBookings.length}건의 예약이 있어 차단할 수 없습니다.\n\n예약 목록: ${bookingNames}\n\n예약을 취소한 후 다시 시도해주세요.`);
+        return;
+      }
       setSettings({
         ...settings,
         blockedDates: [...settings.blockedDates, dateStr].sort(),
@@ -545,6 +578,7 @@ export default function BookingSettingsPage() {
           <div className="grid grid-cols-7 gap-1">
             {calendarDays.map((dayInfo, index) => {
               const isBlocked = dayInfo.isBlocked || dayInfo.isWeekdayBlocked;
+              const hasBookings = dayInfo.bookingsCount > 0;
 
               return (
                 <button
@@ -553,19 +587,38 @@ export default function BookingSettingsPage() {
                   disabled={!dayInfo.day || dayInfo.isPast}
                   onClick={() => toggleBlockedDate(dayInfo.dateStr)}
                   className={`
-                    aspect-square flex items-center justify-center text-sm rounded transition-all
+                    aspect-square flex flex-col items-center justify-center text-sm rounded transition-all relative
                     ${!dayInfo.day ? 'cursor-default' : ''}
                     ${dayInfo.isPast ? 'opacity-30 cursor-not-allowed' : ''}
                     ${dayInfo.day && !dayInfo.isPast ? 'border hover:opacity-80' : ''}
                     ${isBlocked && !dayInfo.isPast
                       ? 'bg-red-500/20 border-red-500 text-red-600'
+                      : hasBookings && !dayInfo.isPast
+                      ? 'bg-blue-500/10 border-blue-500/50'
                       : 'border-[var(--text)]/10'}
                   `}
                 >
                   {dayInfo.day}
+                  {hasBookings && !dayInfo.isPast && (
+                    <span className="absolute bottom-1 text-[10px] text-blue-500 font-medium">
+                      {dayInfo.bookingsCount}건
+                    </span>
+                  )}
                 </button>
               );
             })}
+          </div>
+
+          {/* Legend */}
+          <div className="mt-4 flex gap-4 text-xs text-[var(--text-muted)]">
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-4 bg-red-500/20 border border-red-500 rounded"></div>
+              <span>차단됨</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-4 bg-blue-500/10 border border-blue-500/50 rounded"></div>
+              <span>예약 있음</span>
+            </div>
           </div>
 
           {/* Blocked dates summary */}

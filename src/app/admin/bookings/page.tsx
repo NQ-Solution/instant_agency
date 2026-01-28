@@ -34,10 +34,26 @@ export default function BookingsPage() {
   const [expandedBookingId, setExpandedBookingId] = useState<string | null>(null);
   const [editingNotesId, setEditingNotesId] = useState<string | null>(null);
   const [notesInput, setNotesInput] = useState('');
+  const [blockedDates, setBlockedDates] = useState<string[]>([]);
+  const [blockedWeekdays, setBlockedWeekdays] = useState<number[]>([]);
 
   useEffect(() => {
     fetchBookings();
+    fetchBookingSettings();
   }, []);
+
+  const fetchBookingSettings = async () => {
+    try {
+      const res = await fetch('/api/booking-settings');
+      const data = await res.json();
+      if (data.success && data.data) {
+        setBlockedDates(data.data.blockedDates || []);
+        setBlockedWeekdays(data.data.blockedWeekdays || []);
+      }
+    } catch (error) {
+      console.error('Error fetching booking settings:', error);
+    }
+  };
 
   const fetchBookings = async () => {
     try {
@@ -175,12 +191,13 @@ export default function BookingsPage() {
       day: number | null;
       dateStr: string;
       isToday: boolean;
+      isBlocked: boolean;
       bookingsCount: { pending: number; confirmed: number; cancelled: number; total: number };
     }> = [];
 
     // Empty cells
     for (let i = 0; i < firstDay; i++) {
-      days.push({ day: null, dateStr: '', isToday: false, bookingsCount: { pending: 0, confirmed: 0, cancelled: 0, total: 0 } });
+      days.push({ day: null, dateStr: '', isToday: false, isBlocked: false, bookingsCount: { pending: 0, confirmed: 0, cancelled: 0, total: 0 } });
     }
 
     // Days
@@ -188,6 +205,8 @@ export default function BookingsPage() {
       const date = new Date(year, month, day);
       const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
       const isToday = date.getTime() === today.getTime();
+      const dayOfWeek = date.getDay();
+      const isBlocked = blockedDates.includes(dateStr) || blockedWeekdays.includes(dayOfWeek);
 
       // 해당 날짜의 예약 수 계산
       const dayBookings = bookings.filter((b) => formatDateToKST(new Date(b.date)) === dateStr);
@@ -198,11 +217,11 @@ export default function BookingsPage() {
         total: dayBookings.length,
       };
 
-      days.push({ day, dateStr, isToday, bookingsCount });
+      days.push({ day, dateStr, isToday, isBlocked, bookingsCount });
     }
 
     return days;
-  }, [year, month, bookings]);
+  }, [year, month, bookings, blockedDates, blockedWeekdays]);
 
 
   const handleDateClick = (dateStr: string) => {
@@ -228,6 +247,7 @@ export default function BookingsPage() {
       dateStr: string;
       dayOfWeek: string;
       isToday: boolean;
+      isBlocked: boolean;
       bookingsCount: { pending: number; confirmed: number; cancelled: number; total: number };
     }> = [];
 
@@ -236,6 +256,7 @@ export default function BookingsPage() {
       date.setDate(startOfWeek.getDate() + i);
       const dateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
       const isToday = date.getTime() === today.getTime();
+      const isBlocked = blockedDates.includes(dateStr) || blockedWeekdays.includes(date.getDay());
 
       const dayBookings = bookings.filter((b) => formatDateToKST(new Date(b.date)) === dateStr);
       const bookingsCount = {
@@ -250,12 +271,13 @@ export default function BookingsPage() {
         dateStr,
         dayOfWeek: weekdays[date.getDay()],
         isToday,
+        isBlocked,
         bookingsCount,
       });
     }
 
     return days;
-  }, [currentDate, bookings]);
+  }, [currentDate, bookings, blockedDates, blockedWeekdays]);
 
   // 일간 뷰용 데이터
   const dayViewDate = useMemo(() => {
@@ -487,14 +509,15 @@ export default function BookingsPage() {
                       className={`
                         min-h-[80px] p-2 border rounded-lg text-left transition-all flex flex-col
                         ${!dayInfo.day ? 'bg-transparent border-transparent cursor-default' : ''}
-                        ${dayInfo.day ? 'border-[var(--text)]/10 hover:border-[var(--text)]/30' : ''}
+                        ${dayInfo.day && !dayInfo.isBlocked ? 'border-[var(--text)]/10 hover:border-[var(--text)]/30' : ''}
+                        ${dayInfo.day && dayInfo.isBlocked ? 'bg-red-500/10 border-red-500/30' : ''}
                         ${dayInfo.isToday ? 'border-[var(--text)]' : ''}
                         ${isSelected ? 'bg-[var(--text)]/10 border-[var(--text)]' : ''}
                       `}
                     >
                       {dayInfo.day && (
                         <>
-                          <span className={`text-sm ${dayInfo.isToday ? 'font-bold' : ''}`}>
+                          <span className={`text-sm ${dayInfo.isToday ? 'font-bold' : ''} ${dayInfo.isBlocked ? 'text-red-500' : ''}`}>
                             {dayInfo.day}
                           </span>
                           {hasBookings && (
@@ -538,14 +561,14 @@ export default function BookingsPage() {
                     onClick={() => handleDateClick(dayInfo.dateStr)}
                     className={`
                       min-h-[120px] p-3 border rounded-lg text-left transition-all flex flex-col
-                      border-[var(--text)]/10 hover:border-[var(--text)]/30
+                      ${dayInfo.isBlocked ? 'bg-red-500/10 border-red-500/30' : 'border-[var(--text)]/10 hover:border-[var(--text)]/30'}
                       ${dayInfo.isToday ? 'border-[var(--text)]' : ''}
                       ${isSelected ? 'bg-[var(--text)]/10 border-[var(--text)]' : ''}
                     `}
                   >
                     <div className="text-center mb-2">
-                      <div className="text-xs text-[var(--text-muted)]">{dayInfo.dayOfWeek}</div>
-                      <div className={`text-lg ${dayInfo.isToday ? 'font-bold' : ''}`}>
+                      <div className={`text-xs ${dayInfo.isBlocked ? 'text-red-500' : 'text-[var(--text-muted)]'}`}>{dayInfo.dayOfWeek}</div>
+                      <div className={`text-lg ${dayInfo.isToday ? 'font-bold' : ''} ${dayInfo.isBlocked ? 'text-red-500' : ''}`}>
                         {dayInfo.date.getDate()}
                       </div>
                     </div>
