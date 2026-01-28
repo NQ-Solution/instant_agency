@@ -444,6 +444,32 @@ export default function BookingSettingsPage() {
             <div className="mt-6 space-y-4">
               <div>
                 <label className="block text-xs tracking-wider uppercase text-[var(--text-muted)] mb-2">
+                  미팅 시간
+                </label>
+                <div className="grid grid-cols-4 gap-2">
+                  {[
+                    { value: 30, label: '30분' },
+                    { value: 60, label: '1시간' },
+                    { value: 90, label: '1시간 30분' },
+                    { value: 120, label: '2시간' },
+                  ].map((option) => (
+                    <button
+                      key={option.value}
+                      type="button"
+                      onClick={() => setSettings({ ...settings, slotDuration: option.value })}
+                      className={`py-3 text-sm border rounded transition-colors ${
+                        settings.slotDuration === option.value
+                          ? 'bg-green-500/20 border-green-500 text-green-600'
+                          : 'border-[var(--text)]/20 hover:border-[var(--text)]/50'
+                      }`}
+                    >
+                      {option.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs tracking-wider uppercase text-[var(--text-muted)] mb-2">
                   최소 예약 가능 시간 (시간 전)
                 </label>
                 <input

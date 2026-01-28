@@ -836,7 +836,7 @@ export default function BookingsPage() {
                               <div>
                                 <p className="text-xs text-[var(--text-muted)]">날짜</p>
                                 <p className="font-medium">
-                                  {formatKSTDateKorean(new Date(booking.date))} ({getWeekdayFromDate(new Date(booking.date))}요일)
+                                  {formatKSTDateKorean(new Date(booking.date))}
                                 </p>
                               </div>
                             </div>
