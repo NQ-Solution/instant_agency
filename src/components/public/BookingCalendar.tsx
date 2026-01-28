@@ -124,11 +124,11 @@ export default function BookingCalendar() {
         const slots = data.data
           .filter((b: { status: string }) => b.status !== 'cancelled')
           .map((b: { date: string; time: string; endTime?: string; customer: { name: string }; status: string }) => {
-            // UTC에서 KST로 변환하여 날짜 문자열 생성
-            const dateObj = new Date(b.date);
-            const kstDateStr = formatDateToKST(dateObj);
+            // DB의 날짜는 YYYY-MM-DDTHH:MM:SS.SSSZ 형식으로 저장됨
+            // KST 기준으로 저장된 날짜이므로 ISO 문자열에서 날짜 부분만 추출
+            const dateStr = b.date.split('T')[0];
             return {
-              date: kstDateStr,
+              date: dateStr,
               time: b.time,
               endTime: b.endTime,
               customerName: b.customer?.name,
